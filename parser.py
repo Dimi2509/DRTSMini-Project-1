@@ -9,7 +9,7 @@ from Job import Job
 
 
 def parse_csv_files(
-    folder_path="datasets/", dataset_name="automotive", utilization=None
+    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False
 ) -> list[DataFrame]:
     """
     Prase CSV files from the selected dataset, with an optional filter for utilization percentage.
@@ -23,7 +23,11 @@ def parse_csv_files(
     """
     dataset_map = {
         "automotive": os.path.join(
-            "automotive-utilDist", "automotive-perDist", "1-core", "25-task", "0-jitter"
+            "automotive-utilDist", 
+            "automotive-perDist", 
+            "1-core", 
+            "25-task", 
+            "0-jitter"
         ),
         "uunifast": os.path.join(
             "uunifast-utilDist",
@@ -52,24 +56,45 @@ def parse_csv_files(
             os.path.join(util_folder, "tasksets") for util_folder in util_folders
         ]
 
-    for util_folder in util_folders:
-        print(f"Processing folder: {util_folder}")
+    if verbose:
+        for util_folder in util_folders:
+            print(f"Processing folder: {util_folder}")
 
     # Load csv files
     all_dataframes = []
     for taskset in util_folders:
         csv_files = glob.glob(os.path.join(taskset, "*.csv"))
         for csv_file in csv_files:
-            df = pandas.read_csv(csv_file, index_col=0)
+            df = pandas.read_csv(csv_file)
             all_dataframes.append(df)
 
-    print(f"Total utilization folders processed: {len(util_folders)}")
-    print(f"Total CSV files processed: {len(all_dataframes)}")
-    print(f"Head of first DataFrame:\n{all_dataframes[0].head()}")
+    if verbose:
+        print(f"Total utilization folders processed: {len(util_folders)}")
+        print(f"Total CSV files processed: {len(all_dataframes)}")
+        print(f"Head of first DataFrame:\n{all_dataframes[0].head()}")
 
     return all_dataframes
 
 
+def dataframe_to_jobs(df) -> list[Job]:
+    """
+    Convert a pandas DataFrame into a list of Job objects.
+    Args:
+        df (DataFrame): A pandas DataFrame containing the taskset data.
+    Returns:
+        list[Job]: A list of Job objects created from the DataFrame.
+    """
+    jobs = []
+    for _, row in df.iterrows():
+        job = Job(
+            id=row["TaskID"],
+            deadline=row["Deadline"],
+            start_time=None,  # Set appropriately if available
+            end_time=None,  # Set appropriately if available
+            time_period=row["Period"],
+        )
+        jobs.append(job)
+    return jobs
 
 
 if __name__ == "__main__":
@@ -96,8 +121,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    parse_csv_files(
+    dataset = parse_csv_files(
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,
     )
+
+    print(f"dataset: {dataset[0].columns}")
+
+    tasksets = []
+    for i in range(len(dataset)):
+        taskset = dataframe_to_jobs(dataset[i])
+        tasksets.append(taskset)
+        
+    print(f"Loaded tasksets: {len(tasksets)} tasksets")
+
+    print(f"First job: {tasksets[0][5]}")
+
