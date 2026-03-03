@@ -8,4 +8,4 @@ class Job:
         self.name = f"Job-{id}"
 
     def __str__(self):
-        return f"Job(name={self.name}"
+        return f"Job(name={self.name}, start_time={self.start_time}, end_time={self.end_time}, deadline={self.deadline}, time_period={self.time_period}, execution_time={self.end_time-self.start_time}"
