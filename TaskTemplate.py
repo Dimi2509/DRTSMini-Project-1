@@ -7,3 +7,7 @@ class TaskTemplate:
         self.deadline = deadline
         self.jitter = jitter if jitter is not None else 0
         self.pe = pe if pe is not None else 0
+    
+    def __str__(self):
+        return f"TaskTemplate(id={self.id}, best_case_time={self.best_case_time}, worst_case_time={self.worst_case_time}, time_period={self.time_period}, deadline={self.deadline}, jitter={self.jitter}, pe={self.pe})"
+        
