@@ -3,4 +3,31 @@ Distributed Real-Time Systems Mini Project 1 Repository
 
 
 ## Parser
-The `parser.py` file contains the implementation of the `parse_csv_files` function, which is responsible for loading and parsing CSV files from a specified dataset. The function takes several parameters, including the folder path, dataset name, utilization filter, and a verbose flag for debugging purposes. Then, `dataframe_to_jobs` can be used to convert the pandas DataFrame into an object of type Job.
+
+The `parser.py` module loads taskset CSV files from the `datasets/` directory and converts them into Python objects for further analysis.
+
+### Dataset Structure
+
+Two datasets are supported:
+
+| Dataset | Key | Period Distribution |
+|---|---|---|
+| Automotive | `automotive` | automotive-perDist |
+| UUniFast | `uunifast` | uniform-discrete-perDist |
+
+Each dataset contains tasksets at utilization levels from `0.10` to `1.00` (10 levels, 100 tasksets each).
+
+CSV columns: `TaskID`, `Jitter`, `BCET`, `WCET`, `Period`, `Deadline`, `PE`
+
+### CLI Usage
+
+```bash
+# Load all utilization levels from the automotive dataset
+python parser.py --dataset-name automotive
+
+# Load only 50% utilization tasksets
+python parser.py --dataset-name automotive --utilization 0.50
+
+# Load from a custom datasets folder
+python parser.py --folder-path path/to/datasets/ --dataset-name uunifast --utilization 0.30
+```
