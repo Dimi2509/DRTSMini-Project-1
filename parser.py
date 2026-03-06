@@ -8,6 +8,7 @@ from pandas import DataFrame
 from Job import Job
 from TaskTemplate import TaskTemplate
 
+
 def parse_csv_files(
     folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False
 ) -> list[DataFrame]:
@@ -23,11 +24,7 @@ def parse_csv_files(
     """
     dataset_map = {
         "automotive": os.path.join(
-            "automotive-utilDist", 
-            "automotive-perDist", 
-            "1-core", 
-            "25-task", 
-            "0-jitter"
+            "automotive-utilDist", "automotive-perDist", "1-core", "25-task", "0-jitter"
         ),
         "uunifast": os.path.join(
             "uunifast-utilDist",
@@ -40,6 +37,15 @@ def parse_csv_files(
 
     if dataset_name not in dataset_map:
         raise ValueError(f"Unknown dataset_name: {dataset_name}")
+
+    if utilization is not None:
+        try:
+            util_float = float(utilization)
+            utilization = f"{util_float:.2f}"
+        except ValueError:
+            raise ValueError(
+                f"Invalid utilization format: {utilization}. Should be a float like '0.50'."
+            )
 
     dataset_path = os.path.join(folder_path, dataset_map[dataset_name])
 
@@ -96,6 +102,7 @@ def dataframe_to_jobs(df) -> list[Job]:
         jobs.append(job)
     return jobs
 
+
 def dataframe_to_task_templates(df) -> list[TaskTemplate]:
     """
     Convert a pandas DataFrame into a list of TaskTemplate objects.
@@ -113,10 +120,11 @@ def dataframe_to_task_templates(df) -> list[TaskTemplate]:
             time_period=row["Period"],
             deadline=row["Deadline"],
             jitter=row["Jitter"],
-            pe=row["PE"]
+            pe=row["PE"],
         )
         task_templates.append(task_template)
     return task_templates
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Parse CSV files for a given dataset.")
@@ -136,7 +144,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--utilization",
         type=str,
-        default=None,
+        default=0.10,
         help="Utilization value to filter datasets. Should be in the format '0.50' for 50% utilization.",
     )
 
@@ -153,7 +161,6 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         task_template_set = dataframe_to_task_templates(dataset[i])
         task_templates.append(task_template_set)
-    
+
     print(f"Loaded task templates: {len(task_templates)} sets of task templates")
     print(f"First task template: {len(task_templates[0])}")
-
