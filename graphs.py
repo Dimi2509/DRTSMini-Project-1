@@ -1,27 +1,43 @@
 import matplotlib.pyplot as plt
 
-def graph():
+def graph(job_log):
     # Declaring a figure "gnt"
     fig, gnt = plt.subplots()
 
-    # Task characteristics
-    n_of_tasks = 2
+    gnt.grid(False)
 
-    # Setting Y-axis limits
-    y_unit = 10    
-    y_padding = 4
-    gnt.set_ylim(0, n_of_tasks * y_unit + 2 * y_padding + 50)
-
-    # Setting X-axis limits
-    gnt.set_xlim(0, 160)
+    # Setting default X-axis limits
+    xlim_rolling = 100
+    gnt.set_xlim(0, xlim_rolling)
 
     # Setting labels for x-axis and y-axis
     gnt.set_xlabel('Time')
     gnt.set_ylabel('Task ID')
 
+    n = len(job_log)
+    print(n)
+
+    # Setting Y-axis limits
+    y_unit = 10    
+    y_per_task_padding = 4
+    ylim = n * (y_unit + y_per_task_padding) + 14
+    gnt.set_ylim(0, ylim)
+
+    for job in job_log:
+        gnt.set_xlim(0, job.deadline)
+        print(job.deadline)
+
+        y_bottom = ylim - job.id * (y_unit + y_per_task_padding)
+        y_top = y_bottom + y_unit
+        gnt.broken_barh([(job.start_time, job.end_time)], (y_bottom, y_top), facecolors=('tab:orange'))
     
+    plt.show()
+
+
+
     # Task 1 
     # X pos
+    '''
     start1 = [0, 10]
     end1 = [20, 40]
     task_1 = [(start1[0], end1[0]), (start1[1], end1[1])]
@@ -35,8 +51,6 @@ def graph():
     gnt.set_yticklabels(task_ids)
     #gnt.set_yticks(False)
 
-    # Setting graph attribute
-    gnt.grid(False)
 
     # Declaring a bar in schedule
     gnt.broken_barh(task_1, (task_ids_pos[0], y_unit), facecolors =('tab:orange'))
@@ -54,4 +68,5 @@ def graph():
 
     #plt.savefig("gantt1.png")
     plt.show()
-graph()
+    '''
+#graph()

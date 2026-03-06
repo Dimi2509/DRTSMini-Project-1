@@ -1,4 +1,5 @@
 import argparse
+import graphs
 
 import EDFSimulation
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
@@ -55,3 +56,5 @@ if __name__ == "__main__":
         print(f"Simulation completed for dataset {i+1}. Job log:")
         for job in job_log:
             print(job)
+
+        graphs.graph(job_log)
