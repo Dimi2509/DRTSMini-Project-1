@@ -10,7 +10,7 @@ from TaskTemplate import TaskTemplate
 
 
 def parse_csv_files(
-    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False
+    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None
 ) -> list[DataFrame]:
     """
     Prase CSV files from the selected dataset, with an optional filter for utilization percentage.
@@ -19,6 +19,7 @@ def parse_csv_files(
         folder_path (str): Base path to the datasets folder.
         dataset_name (str): Name of the dataset to parse. Should be either "automotive" or "uunifast".
         utilization (str, optional): Utilization value to filter datasets. Should be in the format '0.50' for 50% utilization. If None, all utilization percentages will be processed.
+        taskset_index (int): Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.
     Returns:
         list[DataFrame]: A list of pandas DataFrames, each containing the data from one CSV file.
     """
@@ -70,6 +71,15 @@ def parse_csv_files(
     all_dataframes = []
     for taskset in util_folders:
         csv_files = glob.glob(os.path.join(taskset, "*.csv"))
+        if taskset_index is not None and taskset_index < len(csv_files):
+            csv_files = [csv_files[taskset_index]]  # Select only the specified taskset index
+        elif taskset_index is None:
+            # Pick a random taskset from the available CSV files
+            import random
+            print(f"Selecting random taskset")
+            csv_files = [random.choice(csv_files)]
+        else:
+            raise IndexError(f"taskset_index {taskset_index} is out of range for folder {taskset} with {len(csv_files)} CSV files.")
         for csv_file in csv_files:
             df = pandas.read_csv(csv_file)
             all_dataframes.append(df)
@@ -147,6 +157,12 @@ if __name__ == "__main__":
         default=0.10,
         help="Utilization value to filter datasets. Should be in the format '0.50' for 50% utilization.",
     )
+    parser.add_argument(
+        "--taskset-index",
+        type=lambda x: int(x) if x.lower() != "none" else None,
+        default=None,
+        help="Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.",
+    )
 
     args = parser.parse_args()
 
@@ -154,6 +170,7 @@ if __name__ == "__main__":
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,
+        taskset_index=args.taskset_index,
     )
 
     # Example of converting to TaskTemplates
