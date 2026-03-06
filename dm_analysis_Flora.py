@@ -1,27 +1,27 @@
 import math
-from parser import parse_csv_files, dataframe_to_jobs
+from parser import parse_csv_files, dataframe_to_task_templates
 
 dataset = parse_csv_files(dataset_name="automotive", utilization="0.50")
 
 # Following pseudo-code book 
-def dm_rta_jobs(jobs):
+def dm_rta_jobs(task_templates):
 
     # Task sorting based on their priority
-    jobs = sorted(jobs, key=lambda j: j.deadline) 
+    task_templates = sorted(task_templates, key=lambda t: t.deadline) 
 
     response_times = []
 
-    for i in range(len(jobs)):
+    for i in range(len(task_templates)):
         # Job paramethers
-        Ci = jobs[i].end_time - jobs[i].start_time
-        Di = jobs[i].deadline
+        Ci = task_templates[i].worst_case_time
+        Di = task_templates[i].deadline
         Ri = Ci
         while True:
             Rold = Ri
             interference = 0
             for h in range(i):
-                Ch = jobs[h].end_time - jobs[h].start_time
-                Th = jobs[h].time_period
+                Ch = task_templates[h].worst_case_time
+                Th = task_templates[h].time_period
                 interference += math.ceil(Rold / Th) * Ch
             Ri = Ci + interference
             if Ri > Di:
@@ -38,23 +38,23 @@ def dm_rta_jobs(jobs):
     }
 
 for df in dataset:
-    jobs = dataframe_to_jobs(df)
-    result = dm_rta_jobs(jobs)
+    task_templates = dataframe_to_task_templates(df)
+    result = dm_rta_jobs(task_templates)
 
     if not result["schedulable"]:
         print("Unschedulable taskset found")
         break
-result = dm_rta_jobs(jobs)
+result = dm_rta_jobs(task_templates)
 
 if result["schedulable"]:
     print("System is SCHEDULABLE\n")
 
-    for i, job in enumerate(sorted(jobs, key=lambda j: j.deadline)):
+    for i, task_templates in enumerate(sorted(task_templates, key=lambda t: t.deadline)):
         print(
-            f"Job {job.id}: "
-            f"C={job.end_time - job.start_time}, "
-            f"T={job.time_period}, "
-            f"D={job.deadline}, "
+            f"Job {task_templates.id}: "
+            f"C={task_templates.worst_case_time}, "
+            f"T={task_templates.time_period}, "
+            f"D={task_templates.deadline}, "
             f"R={result['response_times'][i]}"
         )
 else:
