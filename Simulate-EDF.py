@@ -1,5 +1,6 @@
 import queue
 from Job import Job
+from TaskTemplate import TaskTemplate
 from scipy import stats
 from math import ceil
 
@@ -30,16 +31,6 @@ def create_task_list(task_templates: list, num_tasks):
                 )
             )
     return tasks
-
-
-class TaskTemplate:
-    def __init__(self, id, best_case_time, worst_case_time, time_period, deadline):
-        self.id = id
-        self.best_case_time = best_case_time
-        self.worst_case_time = worst_case_time
-        self.time_period = time_period
-        self.deadline = deadline
-
 
 class Task:
     def __init__(self, id, arrival_time, execution_time, deadline, time_period):
