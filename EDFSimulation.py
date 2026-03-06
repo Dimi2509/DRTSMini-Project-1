@@ -210,9 +210,13 @@ class EDFSimulation:
         return self.scheduler.job_log
 
 
-task1 = TaskTemplate(1, 50, 60, 100, 80)
-task2 = TaskTemplate(2, 22, 25, 25, 20)
-task3 = TaskTemplate(3, 6, 8, 16, 14)
-simulation = EDFSimulation([task1, task3], 10).run()
-for job in simulation:
-    print(job)
+if __name__ == "__main__":
+    # Example usage
+    task_templates = [
+        TaskTemplate(id=1, best_case_time=1, worst_case_time=3, time_period=5, deadline=5, jitter=0),
+        TaskTemplate(id=2, best_case_time=2, worst_case_time=4, time_period=10, deadline=10, jitter=0),
+    ]
+    simulation = EDFSimulation(task_templates, num_tasks=3)
+    job_log = simulation.run()
+    for job in job_log:
+        print(job)
