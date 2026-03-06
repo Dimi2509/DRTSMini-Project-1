@@ -1,5 +1,5 @@
 class TaskTemplate:
-    def __init__(self, id, best_case_time, worst_case_time, time_period, deadline, jitter, pe):
+    def __init__(self, id, best_case_time, worst_case_time, time_period, deadline, jitter=None, pe=None):
         self.id = id
         self.best_case_time = best_case_time
         self.worst_case_time = worst_case_time
