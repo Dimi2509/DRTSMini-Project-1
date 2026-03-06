@@ -4,7 +4,7 @@ from parser import parse_csv_files, dataframe_to_task_templates
 dataset = parse_csv_files(dataset_name="automotive", utilization="0.50")
 
 # Following pseudo-code book 
-def dm_rta_jobs(task_templates):
+def dm_rta_tasks(task_templates):
 
     # Task sorting based on their priority
     task_templates = sorted(task_templates, key=lambda t: t.deadline) 
@@ -39,19 +39,19 @@ def dm_rta_jobs(task_templates):
 
 for df in dataset:
     task_templates = dataframe_to_task_templates(df)
-    result = dm_rta_jobs(task_templates)
+    result = dm_rta_tasks(task_templates)
 
     if not result["schedulable"]:
         print("Unschedulable taskset found")
         break
-result = dm_rta_jobs(task_templates)
+result = dm_rta_tasks(task_templates)
 
 if result["schedulable"]:
     print("System is SCHEDULABLE\n")
 
     for i, task_templates in enumerate(sorted(task_templates, key=lambda t: t.deadline)):
         print(
-            f"Job {task_templates.id}: "
+            f"Task {task_templates.id}: "
             f"C={task_templates.worst_case_time}, "
             f"T={task_templates.time_period}, "
             f"D={task_templates.deadline}, "
