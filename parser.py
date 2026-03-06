@@ -6,7 +6,7 @@ import pandas
 from pandas import DataFrame
 
 from Job import Job
-
+from TaskTemplate import TaskTemplate
 
 def parse_csv_files(
     folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False
@@ -96,6 +96,27 @@ def dataframe_to_jobs(df) -> list[Job]:
         jobs.append(job)
     return jobs
 
+def dataframe_to_task_templates(df) -> list[TaskTemplate]:
+    """
+    Convert a pandas DataFrame into a list of TaskTemplate objects.
+    Args:
+        df (DataFrame): A pandas DataFrame containing the taskset data.
+    Returns:
+        list[TaskTemplate]: A list of TaskTemplate objects created from the DataFrame.
+    """
+    task_templates = []
+    for _, row in df.iterrows():
+        task_template = TaskTemplate(
+            id=row["TaskID"],
+            best_case_time=row["BCET"],
+            worst_case_time=row["WCET"],
+            time_period=row["Period"],
+            deadline=row["Deadline"],
+            jitter=row["Jitter"],
+            pe=row["PE"]
+        )
+        task_templates.append(task_template)
+    return task_templates
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Parse CSV files for a given dataset.")
@@ -127,14 +148,12 @@ if __name__ == "__main__":
         utilization=args.utilization,
     )
 
-    print(f"dataset: {dataset[0].columns}")
-
-    tasksets = []
+    # Example of converting to TaskTemplates
+    task_templates = []
     for i in range(len(dataset)):
-        taskset = dataframe_to_jobs(dataset[i])
-        tasksets.append(taskset)
-        
-    print(f"Loaded tasksets: {len(tasksets)} tasksets")
-
-    print(f"First job: {tasksets[0][5]}")
+        task_template_set = dataframe_to_task_templates(dataset[i])
+        task_templates.append(task_template_set)
+    
+    print(f"Loaded task templates: {len(task_templates)} sets of task templates")
+    print(f"First task template: {len(task_templates[0])}")
 
