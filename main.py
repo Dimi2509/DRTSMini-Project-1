@@ -3,7 +3,6 @@ import graphs
 
 import EDFSimulation
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
-import argparse
 
 def main():
     pass
@@ -27,16 +26,34 @@ if __name__ == "__main__":
     parser.add_argument(
         "--utilization",
         type=str,
+        default="0.10",
+        help="Utilization value to filter datasets. Defaults to 0.10 ",
+    )
+    parser.add_argument(
+        "--simulator",
+        type=str,
+        choices=["EDF", "RM"],
+        default="EDF",
+        help="Name of the simulator to use. Default is EDF",
+    )
+    parser.add_argument(
+        "--taskset-index",
+        type=lambda x: int(x) if x.lower() != "none" else None,
         default=None,
-        help="Utilization value to filter datasets. Should be in the format '0.50' for 50% utilization.",
+        help="Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.",
     )
 
     args = parser.parse_args()
+
+    print('# Simulation Configuration')
+    for key, value in sorted(vars(args).items()):
+        print(key, '=', value)
 
     dataset = parse_csv_files(
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,
+        taskset_index=args.taskset_index,
     )
 
     # Example of converting to TaskTemplates
