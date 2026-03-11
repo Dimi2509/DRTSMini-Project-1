@@ -1,0 +1,5 @@
+TaskID,Jitter,BCET,WCET,Period,Deadline,PE
+0,0,1,1,5,5,0
+1,0,2,3,10,10,0
+2,0,1,2,15,15,0
+3,0,3,5,20,20,0
