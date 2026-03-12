@@ -14,19 +14,32 @@ def get_color_from_id(id_val, total_expected=100):
     normalized_id = (id_val % total_expected) / total_expected
     return cmap(normalized_id)
 
-def graph(job_log):
+def graph(job_log, use_deadlines=False):
     print("Graphing started")
     # Declaring a figure "gnt"
     fig, gnt = plt.subplots()
 
     gnt.grid(False)
 
-    # Max end time as the x axis limit
-    end_times = []
-    [end_times.append(x.end_time) for x in job_log]
-    max_end_time = max(end_times)
+
     x_padding = 50
-    gnt.set_xlim(0 - x_padding, max_end_time + x_padding)
+    max_time = 0
+    deadline_offset = 0
+
+    if(use_deadlines):
+        deadline_times = []
+        [deadline_times.append(x.deadline) for x in job_log]
+        max_deadline_time = max(deadline_times)
+        max_time = max_deadline_time - deadline_offset
+    else:
+        # Max end time as the x axis limit
+        end_times = []
+        [end_times.append(x.end_time) for x in job_log]
+        max_end_time = max(end_times)
+        max_time = max_end_time
+
+    gnt.set_xlim(0 - x_padding, max_time + x_padding)
+
 
     # Setting labels for x-axis and y-axis
     gnt.set_xlabel('Time')
@@ -67,49 +80,16 @@ def graph(job_log):
         # Ending arrow
         gnt.arrow(job.end_time, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), head_width=48, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='black')
 
+        if(use_deadlines):
+            gnt.arrow(job.deadline - deadline_offset, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), head_width=48, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='red')
+
+
         print(f"Job ID: {job.id}")
         print(f"y_bottom: {y_bottom}")
         print(f"job start: {job.start_time}, job end: {job.end_time}")
+        print(f"job deadline: {job.deadline - deadline_offset}")
     
 
     gnt.set_yticks(y_ticks)
     gnt.set_yticklabels(y_ticklabels)
     plt.show()
-
-
-
-    # Task 1 
-    # X pos
-    '''
-    start1 = [0, 10]
-    end1 = [20, 40]
-    task_1 = [(start1[0], end1[0]), (start1[1], end1[1])]
-    # Task 1
-    # Y pos
-    task_ids_pos = [y_padding, y_padding + 1 * y_unit, y_padding + 2 * y_unit]
-    task_ids = ['1', '2', '3']
-
-    task_ids_middle = [(x + y_unit/2) for x in task_ids_pos]
-    gnt.set_yticks(task_ids_middle)
-    gnt.set_yticklabels(task_ids)
-    #gnt.set_yticks(False)
-
-
-    # Declaring a bar in schedule
-    gnt.broken_barh(task_1, (task_ids_pos[0], y_unit), facecolors =('tab:orange'))
-    gnt.axhline(task_ids_pos[0], color='black', linestyle='-')
-
-    # Declaring multiple bars in at same level and same width
-    gnt.broken_barh([(110, 10), (150, 10)], (task_ids_pos[1], y_unit),
-                         facecolors ='tab:blue')
-
-    gnt.broken_barh([(10, 50), (100, 20), (130, 10)], (task_ids_pos[2], y_unit),
-                                  facecolors =('tab:red'))
-    
-    fig.savefig("gantt1.png")
-    print("Graph saved")
-
-    #plt.savefig("gantt1.png")
-    plt.show()
-    '''
-#graph()
