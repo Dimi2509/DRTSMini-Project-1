@@ -82,4 +82,4 @@ if __name__ == "__main__":
             job_log = simulation.run()
             for job in job_log:
                 print(job)
-            graphs.graph(job_log, True, True)
+        graphs.graph(job_log, "haha", True, True)
