@@ -17,10 +17,12 @@ def get_color_from_id(id_val, total_expected=500):
     # normalized_id = rand_id / total_expected
     return cmap(normalized_id)
 
-def graph(job_log, use_deadlines=False, use_period=False):
+def graph(job_log, job_title="hehe", use_deadlines=False, use_period=False):
     print("Graphing started")
     # Declaring a figure "gnt"
     fig, gnt = plt.subplots()
+
+    gnt.set_title(job_title)
 
     gnt.grid(False)
 

@@ -75,10 +75,10 @@ if __name__ == "__main__":
     # EDF Simulation
     for i, templates in enumerate(task_templates):
         print(f"\nRunning EDF Simulation for dataset {i+1} with {len(templates)} task templates...")
-        simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1)
+        simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1, use_worst_case=False, use_hyperperiod=True)
         job_log = simulation.run()
         print(f"Simulation completed for dataset {i+1}. Job log:")
         for job in job_log:
             print(job)
 
-        graphs.graph(job_log, True, True)
+        graphs.graph(job_log, "haha", True, True)
