@@ -30,4 +30,7 @@ python parser.py --dataset-name automotive --utilization 0.50
 
 # Load from a custom datasets folder
 python parser.py --folder-path path/to/datasets/ --dataset-name uunifast --utilization 0.30
+
+# Use the test dataset with schedulable tasksets only
+python parser.py --dataset-name test --schedulable true
 ```
