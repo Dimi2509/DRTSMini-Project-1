@@ -76,6 +76,9 @@ def graph(job_log, use_deadlines=False, use_period=False):
     arrow_width_to_xlim = 0.002
     arrow_width = max_time * arrow_width_to_xlim
 
+    time_period_to_arrow_width = 0.6
+    time_period_width = time_period_to_arrow_width * arrow_width
+
 
     for job in job_log:
         y_bottom = ylim - (job.id + 1) * (y_unit + y_per_task_padding)
@@ -99,8 +102,10 @@ def graph(job_log, use_deadlines=False, use_period=False):
         
         if(use_period):
             # gnt.vlines(job.period, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, (y_unit + y_per_task_padding/2), width=24, facecolor='black')
-            gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), 
-                       colors='blue', linewidth=arrow_width * 0.6)
+            # gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), 
+            #            colors='blue', linewidth=arrow_width * 0.6)
+            # gnt.broken_barh([(job.start_time, job.end_time - job.start_time)], (y_bottom + y_bottom_padding, y_unit), facecolor=get_color_from_id(job.id + 1, n))
+            gnt.broken_barh([(job.time_period - time_period_width/2, time_period_width)], (y_bottom + y_bottom_padding, y_unit), facecolor='blue')
 
 
 
