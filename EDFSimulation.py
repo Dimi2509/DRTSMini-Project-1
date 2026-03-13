@@ -2,7 +2,7 @@ import queue
 from Job import Job
 from TaskTemplate import TaskTemplate
 from scipy import stats
-from math import ceil
+from math import ceil, gcd
 
 
 def get_execution_time(best_case_time: float, worst_case_time: float, use_worst_case=False):
@@ -14,15 +14,23 @@ def get_execution_time(best_case_time: float, worst_case_time: float, use_worst_
         loc=mean, scale=std_dev
     )  # Return a random execution time based on normal distribution
 
+def get_hyperperiod(task_templates):
+    periods = [template.time_period for template in task_templates]
+    lcm = periods[0]
+    for period in periods[1:]:
+        lcm = lcm * period // gcd(lcm, period)
+    return lcm
 
-def create_task_list(task_templates: list, num_tasks, use_worst_case=False):
+def create_task_list(task_templates: list, num_tasks, use_worst_case=False, use_hyperperiod=False):
     tasks = []
     for i in range(num_tasks):
         for template in task_templates:
-            execution_time = get_execution_time(
+            execution_time = ceil(get_execution_time(
                 template.best_case_time, template.worst_case_time, use_worst_case
-            )
+            ))
             arrival_time = i * template.time_period
+            if use_hyperperiod and arrival_time >= get_hyperperiod(task_templates):
+                continue
             tasks.append(
                 Task(
                     id=template.id,
@@ -115,7 +123,7 @@ class EDFScheduler:
         self.current_job: InternalJob = None
 
     def run(self):
-        self.scheduling_queue.print()  # Print the scheduling queue before starting the simulation
+        #self.scheduling_queue.print()  # Print the scheduling queue before starting the simulation
 
         while not (self.ready_queue.empty() and self.scheduling_queue.empty()):
 
@@ -201,8 +209,8 @@ class EDFScheduler:
 
 
 class EDFSimulation:
-    def __init__(self, tasks, num_tasks, use_worst_case=False):
-        self.ready_tasks = create_task_list(tasks, num_tasks, use_worst_case)
+    def __init__(self, tasks, num_tasks, use_worst_case=False, use_hyperperiod=False):
+        self.ready_tasks = create_task_list(tasks, num_tasks, use_worst_case, use_hyperperiod)
         self.scheduler = EDFScheduler(tasks)
 
     def run(self):

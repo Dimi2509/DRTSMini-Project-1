@@ -8,17 +8,19 @@ The `parser.py` module loads taskset CSV files from the `datasets/` directory an
 
 ### Dataset Structure
 
-Two datasets are supported:
+Three datasets are supported:
 
 | Dataset | Key | Period Distribution |
 |---|---|---|
 | Automotive | `automotive` | automotive-perDist |
 | UUniFast | `uunifast` | uniform-discrete-perDist |
+| Test | `test` | test_tasks |
 
 Each dataset contains tasksets at utilization levels from `0.10` to `1.00` (10 levels, 100 tasksets each).
 
 CSV columns: `TaskID`, `Jitter`, `BCET`, `WCET`, `Period`, `Deadline`, `PE`
 
+The test dataset contains schedulable and unschedulable tasksets, which can be filtered using the `--schedulable` flag.
 ### CLI Usage
 
 ```bash
@@ -34,3 +36,51 @@ python parser.py --folder-path path/to/datasets/ --dataset-name uunifast --utili
 # Use the test dataset with schedulable tasksets only
 python parser.py --dataset-name test --schedulable true
 ```
+
+## Main Entry Point
+
+The `main.py` script is the current command-line entrypoint for loading one taskset, converting it into task templates, running a simulation, and plotting the resulting schedule.
+
+When executed, `main.py`:
+
+1. Parses command-line arguments.
+2. Loads one CSV taskset from the selected dataset.
+3. Converts the CSV rows into `TaskTemplate` objects.
+4. Runs a simulation.
+5. Prints the generated job log.
+6. Opens a Matplotlib plot of the schedule.
+
+### CLI Arguments
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `--folder-path` | `str` | `datasets/` | Base path to the datasets folder. |
+| `--dataset-name` | `str` | `automotive` | Dataset to load. Supported values: `automotive`, `uunifast`, `test`. |
+| `--utilization` | `str` | `0.10` | Utilization level to use for `automotive` and `uunifast`. Example: `0.50`. |
+| `--simulator` | `str` | `EDF` | Intended simulator selector. Supported values: `EDF`, `RM`. |
+| `--taskset-index` | `int` or `None` | `None` | Index of the taskset CSV file to load. If omitted, a random taskset is selected. |
+| `--schedulable` | `bool` | `true` | Only used with the `test` dataset. Loads from `schedulable` when `true`, otherwise from `not_schedulable`. |
+
+### Usage Examples
+
+```bash
+# Run the default configuration
+python main.py
+
+# Run one automotive taskset at 30% utilization
+python main.py --dataset-name automotive --utilization 0.30 --taskset-index 0
+
+# Run one UUniFast taskset at 70% utilization
+python main.py --dataset-name uunifast --utilization 0.70 --taskset-index 4
+
+# Run the schedulable test taskset
+python main.py --dataset-name test --schedulable true
+
+# Run the unschedulable test taskset
+python main.py --dataset-name test --schedulable false
+```
+
+### Notes
+
+- If `--taskset-index` is not provided, `main.py` selects a random CSV file from the chosen dataset folder.
+- The `--utilization` argument is ignored for the `test` dataset.
