@@ -55,7 +55,7 @@ if __name__ == "__main__":
     for key, value in sorted(vars(args).items()):
         print(key, '=', value)
 
-    dataset = parse_csv_files(
+    dataset, _ = parse_csv_files(
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,

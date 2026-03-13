@@ -24,6 +24,7 @@ def parse_csv_files(
         schedulable (bool): Whether to load schedulable tasksets from the test dataset. Should be 'true' or 'false'. Default is 'true'.
     Returns:
         list[DataFrame]: A list of pandas DataFrames, each containing the data from one CSV file.
+        str: A string describing the dataset and filters used for loading the data.
     """
     dataset_map = {
         "automotive": os.path.join(
