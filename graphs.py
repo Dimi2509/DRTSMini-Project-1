@@ -98,7 +98,7 @@ def graph(job_log, use_deadlines=False, use_period=False):
 
         if(use_deadlines):
             gnt.arrow(job.deadline - deadline_offset, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), 
-                      head_width=arrow_width * 2, width=arrow_width, length_includes_head=True, head_length=y_per_task_padding, facecolor='red')
+                      head_width=arrow_width * 2, width=arrow_width, length_includes_head=True, head_length=y_per_task_padding, facecolor='red', edgecolor='red')
         
         if(use_period):
             # gnt.vlines(job.period, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, (y_unit + y_per_task_padding/2), width=24, facecolor='black')
