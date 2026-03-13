@@ -10,16 +10,18 @@ from TaskTemplate import TaskTemplate
 
 
 def parse_csv_files(
-    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None
+    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None, schedulable=True
 ) -> list[DataFrame]:
     """
     Prase CSV files from the selected dataset, with an optional filter for utilization percentage.
 
     Args:
         folder_path (str): Base path to the datasets folder.
-        dataset_name (str): Name of the dataset to parse. Should be either "automotive" or "uunifast".
+        dataset_name (str): Name of the dataset to parse. Choices are "automotive", "uunifast", or "test".
         utilization (str, optional): Utilization value to filter datasets. Should be in the format '0.50' for 50% utilization. If None, all utilization percentages will be processed.
+        verbose (bool): Whether to print detailed information about the parsing process. Default is False.
         taskset_index (int): Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.
+        schedulable (bool): Whether to load schedulable tasksets from the test dataset. Should be 'true' or 'false'. Default is 'true'.
     Returns:
         list[DataFrame]: A list of pandas DataFrames, each containing the data from one CSV file.
     """
@@ -33,6 +35,9 @@ def parse_csv_files(
             "1-core",
             "25-task",
             "0-jitter",
+        ),
+        "test": os.path.join(
+            "test_tasks"
         ),
     }
 
@@ -50,18 +55,20 @@ def parse_csv_files(
 
     dataset_path = os.path.join(folder_path, dataset_map[dataset_name])
 
-    if utilization:
+    if utilization and dataset_name != "test":
         # Select specific utilization percentage
         util_folders = glob.glob(os.path.join(dataset_path, f"{utilization}-util"))
         util_folders = [
             os.path.join(util_folder, "tasksets") for util_folder in util_folders
         ]
     else:
-        # Select all utilization percentages and add /tasksets
-        util_folders = glob.glob(os.path.join(dataset_path, "*-util"))
-        util_folders = [
-            os.path.join(util_folder, "tasksets") for util_folder in util_folders
-        ]
+        # Load Test dataset 
+        if schedulable:
+            util_folders = [os.path.join(dataset_path, "schedulable")]
+        else:
+            util_folders = [os.path.join(dataset_path, "not_schedulable")]
+        print(f"Loading {'schedulable' if schedulable else 'not_schedulable'} tasksets from test dataset from {util_folders}")
+
 
     if verbose:
         for util_folder in util_folders:
@@ -147,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset_name",
         type=str,
-        choices=["automotive", "uunifast"],
+        choices=["automotive", "uunifast", "test"],
         default="automotive",
         help="Name of the dataset to parse.",
     )
@@ -163,6 +170,12 @@ if __name__ == "__main__":
         default=None,
         help="Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.",
     )
+    parser.add_argument(
+        "--schedulable",
+        type=lambda x: x.lower() == "true",
+        default=True,
+        help="Whether to load schedulable tasksets from the test dataset. Should be 'true' or 'false'. Default is 'true'.",
+    )
 
     args = parser.parse_args()
 
@@ -171,6 +184,7 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         utilization=args.utilization,
         taskset_index=args.taskset_index,
+        schedulable=args.schedulable,
     )
 
     # Example of converting to TaskTemplates

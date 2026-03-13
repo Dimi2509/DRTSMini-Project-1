@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset-name",
         type=str,
-        choices=["automotive", "uunifast"],
+        choices=["automotive", "uunifast", "test"],
         default="automotive",
         help="Name of the dataset to parse.",
     )
@@ -42,6 +42,12 @@ if __name__ == "__main__":
         default=None,
         help="Index of the taskset to return. If None, return a random taskset from the selected dataset and utilization.",
     )
+    parser.add_argument(
+        "--schedulable",
+        type=lambda x: x.lower() == "true",
+        default=True,
+        help="Whether to load schedulable tasksets from the test dataset. Only works if using test dataset. Should be 'true' or 'false'. Default is 'true'.",
+    )
 
     args = parser.parse_args()
 
@@ -54,6 +60,7 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         utilization=args.utilization,
         taskset_index=args.taskset_index,
+        schedulable=args.schedulable
     )
 
     # Example of converting to TaskTemplates
@@ -74,4 +81,4 @@ if __name__ == "__main__":
         for job in job_log:
             print(job)
 
-        graphs.graph(job_log, True, True)
+        g
