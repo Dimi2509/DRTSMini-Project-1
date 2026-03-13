@@ -84,7 +84,9 @@ def parse_csv_files(
             # Pick a random taskset from the available CSV files
             import random
             print(f"Selecting random taskset")
-            csv_files = [random.choice(csv_files)]
+            selected_taskset = random.choice(csv_files)
+            taskset_index = csv_files.index(selected_taskset)
+            csv_files = [selected_taskset]
         else:
             raise IndexError(f"taskset_index {taskset_index} is out of range for folder {taskset} with {len(csv_files)} CSV files.")
         for csv_file in csv_files:
@@ -96,7 +98,7 @@ def parse_csv_files(
         print(f"Total CSV files processed: {len(all_dataframes)}")
         print(f"Head of first DataFrame:\n{all_dataframes[0].head()}")
 
-    return all_dataframes
+    return all_dataframes, f"Dataset {dataset_name}/{utilization if dataset_name != 'test' else 'schedulable' if schedulable else 'not_schedulable'}/Index {taskset_index}"
 
 
 def dataframe_to_jobs(df) -> list[Job]:
@@ -179,7 +181,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    dataset = parse_csv_files(
+    dataset, csv_files = parse_csv_files(
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,
@@ -195,3 +197,4 @@ if __name__ == "__main__":
 
     print(f"Loaded task templates: {len(task_templates)} sets of task templates")
     print(f"First task template: {len(task_templates[0])}")
+    print(f"CSV files processed: {csv_files}")

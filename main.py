@@ -68,17 +68,18 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         task_template_set = dataframe_to_task_templates(dataset[i])
         task_templates.append(task_template_set)
-    
-    print(f"Loaded task templates: {len(task_templates)} sets of task templates")
-    print(f"First task template: {task_templates[0][0]}")
 
-    # EDF Simulation
-    for i, templates in enumerate(task_templates):
-        print(f"\nRunning EDF Simulation for dataset {i+1} with {len(templates)} task templates...")
-        simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1, use_worst_case=False, use_hyperperiod=True)
-        job_log = simulation.run()
-        print(f"Simulation completed for dataset {i+1}. Job log:")
-        for job in job_log:
-            print(job)
+    # Prepare simulation configuration
+    simulators_to_run = [args.simulator] if args.simulator else ["EDF", "RM"]
 
+    for simulator in simulators_to_run:
+        for i, templates in enumerate(task_templates):
+            print(f"\nRunning {simulator} Simulation for dataset {i+1}...")
+            if simulator == "EDF":
+                simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1)
+            else:
+                simulation = RMSimulation.RMSimulation(templates, num_tasks=1)
+            job_log = simulation.run()
+            for job in job_log:
+                print(job)
         graphs.graph(job_log, "haha", True, True)
