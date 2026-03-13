@@ -33,8 +33,8 @@ if __name__ == "__main__":
         "--simulator",
         type=str,
         choices=["EDF", "RM"],
-        default="EDF",
-        help="Name of the simulator to use. Default is EDF",
+        default=None,
+        help="Name of the simulator to use, leave blank if you want to run both schedulers. Default is None. Choices are 'EDF' or 'RM'.",
     )
     parser.add_argument(
         "--taskset-index",
