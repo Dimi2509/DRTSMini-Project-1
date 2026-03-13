@@ -146,13 +146,13 @@ def dataframe_to_task_templates(df) -> list[TaskTemplate]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Parse CSV files for a given dataset.")
     parser.add_argument(
-        "--folder_path",
+        "--folder-path",
         type=str,
         default="datasets/",
         help="Path to the datasets folder.",
     )
     parser.add_argument(
-        "--dataset_name",
+        "--dataset-name",
         type=str,
         choices=["automotive", "uunifast", "test"],
         default="automotive",
