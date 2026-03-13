@@ -5,20 +5,22 @@ from scipy import stats
 from math import ceil
 
 
-def get_execution_time(best_case_time: float, worst_case_time: float):
+def get_execution_time(best_case_time: float, worst_case_time: float, use_worst_case=False):
     mean = (best_case_time + worst_case_time) / 2
     std_dev = (worst_case_time - best_case_time) / 6  # Assuming 99.7% of values
+    if use_worst_case:
+        return worst_case_time
     return stats.norm.rvs(
         loc=mean, scale=std_dev
     )  # Return a random execution time based on normal distribution
 
 
-def create_task_list(task_templates: list, num_tasks):
+def create_task_list(task_templates: list, num_tasks, use_worst_case=False):
     tasks = []
     for i in range(num_tasks):
         for template in task_templates:
             execution_time = get_execution_time(
-                template.best_case_time, template.worst_case_time
+                template.best_case_time, template.worst_case_time, use_worst_case
             )
             arrival_time = i * template.time_period
             tasks.append(
@@ -199,8 +201,8 @@ class EDFScheduler:
 
 
 class EDFSimulation:
-    def __init__(self, tasks, num_tasks):
-        self.ready_tasks = create_task_list(tasks, num_tasks)
+    def __init__(self, tasks, num_tasks, use_worst_case=False):
+        self.ready_tasks = create_task_list(tasks, num_tasks, use_worst_case)
         self.scheduler = EDFScheduler(tasks)
 
     def run(self):
