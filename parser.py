@@ -11,7 +11,7 @@ from TaskTemplate import TaskTemplate
 
 def parse_csv_files(
     folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None, schedulable=True
-) -> list[DataFrame]:
+) -> tuple[list[DataFrame], str]:
     """
     Prase CSV files from the selected dataset, with an optional filter for utilization percentage.
 

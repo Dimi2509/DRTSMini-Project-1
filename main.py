@@ -55,7 +55,7 @@ if __name__ == "__main__":
     for key, value in sorted(vars(args).items()):
         print(key, '=', value)
 
-    dataset, _ = parse_csv_files(
+    dataset, job_title = parse_csv_files(
         folder_path=args.folder_path,
         dataset_name=args.dataset_name,
         utilization=args.utilization,
@@ -73,6 +73,7 @@ if __name__ == "__main__":
     simulators_to_run = [args.simulator] if args.simulator else ["EDF", "RM"]
 
     for simulator in simulators_to_run:
+        temp_job_title = job_title + " " + simulator
         for i, templates in enumerate(task_templates):
             print(f"\nRunning {simulator} Simulation for dataset {i+1}...")
             if simulator == "EDF":
@@ -82,4 +83,4 @@ if __name__ == "__main__":
             job_log = simulation.run()
             for job in job_log:
                 print(job)
-        graphs.graph(job_log, "haha", True, True)
+        graphs.graph(job_log, temp_job_title, True, True)
