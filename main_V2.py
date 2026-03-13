@@ -48,7 +48,7 @@ def main(args):
         for job in job_log:
             print(job)
 
-        graphs.graph(job_log)
+        graphs.graph(job_log, True, True)
 
 
 if __name__ == "__main__":

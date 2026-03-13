@@ -1,20 +1,23 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
-def get_color_from_id(id_val, total_expected=100):
+def get_color_from_id(id_val, total_expected=500):
     """
     Returns a color for a given ID using a perceptually broad colormap.
     """
     # Using 'gist_ncar' or 'nipy_spectral' as they contain many 
     # distinct color transitions suitable for many categories.
-    #cmap = plt.colormaps['gist_ncar']
-    cmap = plt.colormaps['nipy_spectral']
+    cmap = plt.colormaps['gist_ncar']
+    # cmap = plt.colormaps['nipy_spectral']
     
     # Normalize the ID to a 0-1 range based on the total
     normalized_id = (id_val % total_expected) / total_expected
+    # rand_id = random.randint(0, id_val)
+    # normalized_id = rand_id / total_expected
     return cmap(normalized_id)
 
-def graph(job_log, use_deadlines=False):
+def graph(job_log, use_deadlines=False, use_period=False):
     print("Graphing started")
     # Declaring a figure "gnt"
     fig, gnt = plt.subplots()
@@ -26,17 +29,21 @@ def graph(job_log, use_deadlines=False):
     max_time = 0
     deadline_offset = 0
 
-    if(use_deadlines):
-        deadline_times = []
-        [deadline_times.append(x.deadline) for x in job_log]
-        max_deadline_time = max(deadline_times)
-        max_time = max_deadline_time - deadline_offset
-    else:
-        # Max end time as the x axis limit
-        end_times = []
-        [end_times.append(x.end_time) for x in job_log]
-        max_end_time = max(end_times)
-        max_time = max_end_time
+    # if(use_deadlines):
+    #     deadline_times = []
+    #     [deadline_times.append(x.deadline) for x in job_log]
+    #     max_deadline_time = max(deadline_times)
+    #     max_time = max_deadline_time - deadline_offset
+    # else:
+    #     # Max end time as the x axis limit
+    #     end_times = []
+    #     [end_times.append(x.end_time) for x in job_log]
+    #     max_end_time = max(end_times)
+    #     max_time = max_end_time
+    end_time_times = []
+    [end_time_times.append(x.end_time) for x in job_log]
+    max_end_time_time = max(end_time_times)
+    max_time = max_end_time_time
 
     gnt.set_xlim(0 - x_padding, max_time + x_padding)
 
@@ -82,6 +89,11 @@ def graph(job_log, use_deadlines=False):
 
         if(use_deadlines):
             gnt.arrow(job.deadline - deadline_offset, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), head_width=48, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='red')
+        
+        if(use_period):
+            # gnt.vlines(job.period, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, (y_unit + y_per_task_padding/2), width=24, facecolor='black')
+            gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), colors='black', linewidth=4)
+
 
 
         print(f"Job ID: {job.id}")

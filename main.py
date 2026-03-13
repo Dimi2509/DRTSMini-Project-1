@@ -74,4 +74,4 @@ if __name__ == "__main__":
         for job in job_log:
             print(job)
 
-        graphs.graph(job_log, False)
+        graphs.graph(job_log, True, True)
