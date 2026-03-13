@@ -5,7 +5,9 @@ from scipy import stats
 from math import ceil, gcd
 
 
-def get_execution_time(best_case_time: float, worst_case_time: float, use_worst_case=False):
+def get_execution_time(
+    best_case_time: float, worst_case_time: float, use_worst_case=False
+):
     mean = (best_case_time + worst_case_time) / 2
     std_dev = (worst_case_time - best_case_time) / 6  # Assuming 99.7% of values
     if use_worst_case:
@@ -14,6 +16,7 @@ def get_execution_time(best_case_time: float, worst_case_time: float, use_worst_
         loc=mean, scale=std_dev
     )  # Return a random execution time based on normal distribution
 
+
 def get_hyperperiod(task_templates):
     periods = [template.time_period for template in task_templates]
     lcm = periods[0]
@@ -21,13 +24,18 @@ def get_hyperperiod(task_templates):
         lcm = lcm * period // gcd(lcm, period)
     return lcm
 
-def create_task_list(task_templates: list, num_tasks, use_worst_case=False, use_hyperperiod=False):
+
+def create_task_list(
+    task_templates: list, num_tasks, use_worst_case=False, use_hyperperiod=False
+):
     tasks = []
     for i in range(num_tasks):
         for template in task_templates:
-            execution_time = ceil(get_execution_time(
-                template.best_case_time, template.worst_case_time, use_worst_case
-            ))
+            execution_time = ceil(
+                get_execution_time(
+                    template.best_case_time, template.worst_case_time, use_worst_case
+                )
+            )
             arrival_time = i * template.time_period
             if use_hyperperiod and arrival_time >= get_hyperperiod(task_templates):
                 continue
@@ -41,6 +49,7 @@ def create_task_list(task_templates: list, num_tasks, use_worst_case=False, use_
                 )
             )
     return tasks
+
 
 class Task:
     def __init__(self, id, arrival_time, execution_time, deadline, time_period):
@@ -71,6 +80,7 @@ class InternalJob:
     def __str__(self):
         return f"Job(name={self.name}, start_time={self.start_time}, end_time={self.end_time}, deadline={self.deadline}, time_period={self.time_period}, execution_time={self.execution_time})"
 
+
 class SchedulingQueue:
     def __init__(self):
         self.queue = queue.PriorityQueue()
@@ -80,7 +90,7 @@ class SchedulingQueue:
 
     def pop(self):
         return self.queue.get()[1]
-    
+
     def peek(self):
         if not self.queue.empty():
             return self.queue.queue[0][1]
@@ -88,11 +98,12 @@ class SchedulingQueue:
 
     def empty(self):
         return self.queue.empty()
-    
+
     def print(self):
         self.queue.queue.sort()  # Sort the internal list to ensure correct order for printing
         for item in self.queue.queue:
             print(item[1])
+
 
 class ReadyQueue:
     def __init__(self):
@@ -103,7 +114,7 @@ class ReadyQueue:
 
     def pop(self):
         return self.queue.get()[1]
-    
+
     def peek(self):
         if not self.queue.empty():
             return self.queue.queue[0][1]
@@ -123,35 +134,31 @@ class EDFScheduler:
         self.current_job: InternalJob = None
 
     def run(self):
-        #self.scheduling_queue.print()  # Print the scheduling queue before starting the simulation
+        # self.scheduling_queue.print()  # Print the scheduling queue before starting the simulation
 
-        while not (self.ready_queue.empty() and self.scheduling_queue.empty()):
+        while not (
+            self.ready_queue.empty()
+            and self.scheduling_queue.empty()
+            and self.current_job is None
+        ):
 
             self.update_ready_queue()
             top_ready_task = self.ready_queue.peek()
 
             # If processor is idle and there is a ready task, start executing the top ready task
-            if (
-                self.current_job is None
-                and top_ready_task is not None
-            ):
+            if self.current_job is None and top_ready_task is not None:
                 self.current_job = self.get_internal_job_from_task(
                     self.ready_queue.pop()
                 )
 
             # Context change condition: if the top ready task has an earlier deadline than the second ready job,
             # preempt the current job
-            elif (
-                top_ready_task is not None
-                and (
-                    self.current_job is None
-                    or top_ready_task.deadline < self.current_job.deadline
-                )
+            elif top_ready_task is not None and (
+                self.current_job is None
+                or top_ready_task.deadline < self.current_job.deadline
             ):
                 self.log_job(self.current_job)
-                self.ready_queue.put(
-                    self.get_task_from_internal_job(self.current_job)
-                )
+                self.ready_queue.put(self.get_task_from_internal_job(self.current_job))
                 self.current_job = self.get_internal_job_from_task(
                     self.ready_queue.pop()
                 )
@@ -210,7 +217,9 @@ class EDFScheduler:
 
 class EDFSimulation:
     def __init__(self, tasks, num_tasks, use_worst_case=False, use_hyperperiod=False):
-        self.ready_tasks = create_task_list(tasks, num_tasks, use_worst_case, use_hyperperiod)
+        self.ready_tasks = create_task_list(
+            tasks, num_tasks, use_worst_case, use_hyperperiod
+        )
         self.scheduler = EDFScheduler(tasks)
 
     def run(self):
@@ -223,8 +232,22 @@ class EDFSimulation:
 if __name__ == "__main__":
     # Example usage
     task_templates = [
-        TaskTemplate(id=1, best_case_time=1, worst_case_time=3, time_period=5, deadline=5, jitter=0),
-        TaskTemplate(id=2, best_case_time=2, worst_case_time=4, time_period=10, deadline=10, jitter=0),
+        TaskTemplate(
+            id=1,
+            best_case_time=1,
+            worst_case_time=3,
+            time_period=5,
+            deadline=5,
+            jitter=0,
+        ),
+        TaskTemplate(
+            id=2,
+            best_case_time=2,
+            worst_case_time=4,
+            time_period=10,
+            deadline=10,
+            jitter=0,
+        ),
     ]
     simulation = EDFSimulation(task_templates, num_tasks=3)
     job_log = simulation.run()
