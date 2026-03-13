@@ -24,30 +24,6 @@ def graph(job_log, use_deadlines=False, use_period=False):
 
     gnt.grid(False)
 
-
-    x_padding = 50
-    max_time = 0
-    deadline_offset = 0
-
-    # if(use_deadlines):
-    #     deadline_times = []
-    #     [deadline_times.append(x.deadline) for x in job_log]
-    #     max_deadline_time = max(deadline_times)
-    #     max_time = max_deadline_time - deadline_offset
-    # else:
-    #     # Max end time as the x axis limit
-    #     end_times = []
-    #     [end_times.append(x.end_time) for x in job_log]
-    #     max_end_time = max(end_times)
-    #     max_time = max_end_time
-    end_time_times = []
-    [end_time_times.append(x.end_time) for x in job_log]
-    max_end_time_time = max(end_time_times)
-    max_time = max_end_time_time
-
-    gnt.set_xlim(0 - x_padding, max_time + x_padding)
-
-
     # Setting labels for x-axis and y-axis
     gnt.set_xlabel('Time')
     gnt.set_ylabel('Task ID')
@@ -73,6 +49,34 @@ def graph(job_log, use_deadlines=False, use_period=False):
     y_ticks = []
     y_ticklabels = []
 
+    max_time = 0
+    deadline_offset = 0
+
+    # if(use_deadlines):
+    #     deadline_times = []
+    #     [deadline_times.append(x.deadline) for x in job_log]
+    #     max_deadline_time = max(deadline_times)
+    #     max_time = max_deadline_time - deadline_offset
+    # else:
+    #     # Max end time as the x axis limit
+    #     end_times = []
+    #     [end_times.append(x.end_time) for x in job_log]
+    #     max_end_time = max(end_times)
+    #     max_time = max_end_time
+    end_time_times = []
+    [end_time_times.append(x.end_time) for x in job_log]
+    max_end_time_time = max(end_time_times)
+    max_time = max_end_time_time
+
+    x_padding_to_xlim = 0.05
+    x_padding = max_time * x_padding_to_xlim
+
+    gnt.set_xlim(0 - x_padding, max_time + x_padding)
+
+    arrow_width_to_xlim = 0.002
+    arrow_width = max_time * arrow_width_to_xlim
+
+
     for job in job_log:
         y_bottom = ylim - (job.id + 1) * (y_unit + y_per_task_padding)
         gnt.broken_barh([(job.start_time, job.end_time - job.start_time)], (y_bottom + y_bottom_padding, y_unit), facecolor=get_color_from_id(job.id + 1, n))
@@ -82,17 +86,21 @@ def graph(job_log, use_deadlines=False, use_period=False):
         gnt.axhline(y_bottom + y_bottom_padding, color='black', linestyle='-', linewidth=1)
 
         # Starting arrow
-        gnt.arrow(job.start_time, y_bottom + y_bottom_padding, 0, y_unit + y_per_task_padding/2, head_width=64, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='black')
+        gnt.arrow(job.start_time, y_bottom + y_bottom_padding, 0, y_unit + y_per_task_padding/2, 
+                  head_width=arrow_width * 2, width=arrow_width, length_includes_head=True, head_length=y_per_task_padding, facecolor='black')
 
         # Ending arrow
-        gnt.arrow(job.end_time, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), head_width=48, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='black')
+        gnt.arrow(job.end_time, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), 
+                  head_width=arrow_width * 2, width=arrow_width, length_includes_head=True, head_length=y_per_task_padding, facecolor='black')
 
         if(use_deadlines):
-            gnt.arrow(job.deadline - deadline_offset, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), head_width=48, width=24, length_includes_head=True, head_length=y_per_task_padding, facecolor='red')
+            gnt.arrow(job.deadline - deadline_offset, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, 0, -(y_unit + y_per_task_padding/2), 
+                      head_width=arrow_width * 2, width=arrow_width, length_includes_head=True, head_length=y_per_task_padding, facecolor='red')
         
         if(use_period):
             # gnt.vlines(job.period, y_bottom + y_bottom_padding + y_unit + y_per_task_padding/2, (y_unit + y_per_task_padding/2), width=24, facecolor='black')
-            gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), colors='blue', linewidth=4)
+            gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), 
+                       colors='blue', linewidth=arrow_width * 0.6)
 
 
 
