@@ -72,7 +72,6 @@ if __name__ == "__main__":
 
     # Prepare simulation configuration
     simulators_to_run = [args.simulator] if args.simulator else ["EDF", "RM"]
-
     for simulator in simulators_to_run:
         temp_job_title = job_title + " " + simulator
         for i, templates in enumerate(task_templates):
@@ -89,6 +88,7 @@ if __name__ == "__main__":
             else:
                 simulation = RMSimulation.RMSimulation(templates)  # Hyperperiod auto-calculated
                 job_log, hyperperiod = simulation.run()
+                print(job_log)
                 for job in job_log:
                     print(job)
                 graph_hyperperiod(job_log, temp_job_title, hyperperiod=hyperperiod, use_deadlines=True)
