@@ -3,6 +3,7 @@ import graphs
 import RMSimulation
 import EDFSimulation
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
+from graph_hyperperiod import graph_hyperperiod 
 
 def main():
     pass
@@ -78,9 +79,16 @@ if __name__ == "__main__":
             print(f"\nRunning {simulator} Simulation for dataset {i+1}...")
             if simulator == "EDF":
                 simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1)
+                job_log = simulation.run()
+                print(job_log)
+
+                for job in job_log:
+                    print(job)
+                graphs.graph(job_log, temp_job_title, True, True)
+
             else:
-                simulation = RMSimulation.RMSimulation(templates, num_tasks=1)
-            job_log = simulation.run()
-            for job in job_log:
-                print(job)
-        graphs.graph(job_log, temp_job_title, True, True)
+                simulation = RMSimulation.RMSimulation(templates)  # Hyperperiod auto-calculated
+                job_log, hyperperiod = simulation.run()
+                for job in job_log:
+                    print(job)
+                graph_hyperperiod(job_log, temp_job_title, hyperperiod=hyperperiod, use_deadlines=True)
