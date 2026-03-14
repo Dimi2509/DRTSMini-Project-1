@@ -89,7 +89,7 @@ class ReadyQueue:
         self.queue = queue.PriorityQueue()
 
     def put(self, task):
-        self.queue.put((task.deadline, task))
+        self.queue.put((task.time_period, task))
 
     def pop(self):
         return self.queue.get()[1]
