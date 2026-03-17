@@ -1,32 +1,32 @@
-class AperiodicAnalyzerEDF:
-    def __init__(self, jobs):
-        self.jobs = jobs 
+class AnalyzerEDF:
+    def __init__(self, tasks):
+        self.tasks = tasks
         self.is_schedulable = None
-        # self.analyze_aperiodic()
     
-    def add_job(self, job):
-        self.jobs.append(job)
+    def add_task(self, task):
+        self.tasks.append(task)
         self.analyze_aperiodic()
 
     def analyze_aperiodic(self, current_time=0):
         self._sort()
 
         prev_f_time = current_time
-        for job in self.jobs:
-            remain_exec_time = job.end_time - current_time # Remaining execution time of job
+        for task in self.tasks:
+            remain_exec_time = task.worst_case_time - current_time # Remaining execution time of task
             finish_time = prev_f_time + remain_exec_time
-            if finish_time > job.deadline:
+            prev_f_time = finish_time
+            if finish_time > task.deadline:
                 self.is_schedulable = False
                 return False
         
         self.is_schedulable = True
         return True
     
-    def analyze_periodic(self, t):
+    def analyze_periodic(self, t=0):
         proc_demand = 0
-        for job in self.jobs:
-            comp_time = job.end_time - t
-            proc_demand += int( (t + job.time_period - job.deadline) / job.time_period) * comp_time
+        for task in self.tasks:
+            comp_time = task.worst_case_time - t
+            proc_demand += int( (t + task.time_period - task.deadline) / task.time_period) * comp_time
         if proc_demand > t:
             self.is_schedulable = False
             return False
@@ -35,20 +35,20 @@ class AperiodicAnalyzerEDF:
         return True
 
     def _sort(self):
-        # self.jobs.sort(key=lambda x: x.deadline) # Yea no.
-        self._quicksort(0, len(self.jobs)-1)
+        # self.tasks.sort(key=lambda x: x.deadline) # Yea no.
+        self._quicksort(0, len(self.tasks)-1)
 
     def _quicksort(self, low, high): # Yes, I implemented quicksort by hand. Take it up with HR
         if low >= high:
             return
 
         i, j = low, high
-        p = self.jobs[low].deadline
+        p = self.tasks[low].deadline
 
         while i < j:
-            while i < high and self.jobs[i].deadline <= p:
+            while i < high and self.tasks[i].deadline <= p:
                 i += 1
-            while j > low and self.jobs[j].deadline > p:
+            while j > low and self.tasks[j].deadline > p:
                 j -= 1
 
             if i < j: # Swap
@@ -59,6 +59,6 @@ class AperiodicAnalyzerEDF:
         self._quicksort(j+1, high)
 
     def _swap(self, i, j):
-        tmp = self.jobs[i]
-        self.jobs[i] = self.jobs[j]
-        self.jobs[j] = tmp
+        tmp = self.tasks[i]
+        self.tasks[i] = self.tasks[j]
+        self.tasks[j] = tmp

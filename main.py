@@ -2,6 +2,7 @@ import argparse
 import graphs
 import RMSimulation
 import EDFSimulation
+from AnalyzerEDF import AnalyzerEDF
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
 from graph_hyperperiod import graph_hyperperiod 
 
@@ -69,6 +70,15 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         task_template_set = dataframe_to_task_templates(dataset[i])
         task_templates.append(task_template_set)
+
+    # Check schedulability
+    analyzer = AnalyzerEDF(task_templates[0])
+    schedulable = analyzer.analyze_aperiodic()
+    # schedulable = analyzer.analyze_periodic()
+    if schedulable:
+        print("The set is schedulable")
+    else:
+        print("The set is not schedulable")
 
     # Prepare simulation configuration
     simulators_to_run = [args.simulator] if args.simulator else ["EDF", "RM"]
