@@ -188,7 +188,7 @@ class test_edf_simulation(unittest.TestCase):
             self.assertLessEqual(
                 job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
             )
-    
+
     def test_edf_but_not_rm(self):
         task_templates = [
             TaskTemplate.TaskTemplate(
@@ -213,11 +213,52 @@ class test_edf_simulation(unittest.TestCase):
             task_templates, num_tasks=num_tasks, use_worst_case=True
         )
         job_log = simulation.run()
-        graphs.graph(job_log, True, True)
         for job in job_log:
             self.assertLessEqual(
                 job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
             )
+
+    def test_get_hyperperiod(self):
+        templates = [
+            TaskTemplate.TaskTemplate(
+                id=1,
+                best_case_time=1,
+                worst_case_time=2,
+                time_period=4,
+                deadline=4,
+                jitter=0,
+            ),
+            TaskTemplate.TaskTemplate(
+                id=2,
+                best_case_time=1,
+                worst_case_time=2,
+                time_period=6,
+                deadline=6,
+                jitter=0,
+            ),
+        ]
+        self.assertEqual(EDFSimulation.get_hyperperiod(templates), 12)
+
+    def test_get_execution_time_worst_case(self):
+        w = EDFSimulation.get_execution_time(1, 5, use_worst_case=True)
+        self.assertEqual(w, 5)
+
+    def test_create_task_list_size(self):
+        templates = [
+            TaskTemplate.TaskTemplate(
+                id=1,
+                best_case_time=1,
+                worst_case_time=1,
+                time_period=10,
+                deadline=10,
+                jitter=0,
+            )
+        ]
+        tasks = EDFSimulation.create_task_list(
+            templates, num_tasks=3, use_worst_case=True, use_hyperperiod=False
+        )
+        self.assertEqual(len(tasks), 3)
+        self.assertTrue(all(t.arrival_time in [0, 10, 20] for t in tasks))
 
 
 if __name__ == "__main__":

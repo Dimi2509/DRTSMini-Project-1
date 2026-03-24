@@ -37,6 +37,49 @@ python parser.py --folder-path path/to/datasets/ --dataset-name uunifast --utili
 python parser.py --dataset-name test --schedulable true
 ```
 
+## EDF-Simulator
+
+The `EDFSimulation.py` module implements an Earliest Deadline First scheduler for periodic real-time tasks.
+
+### EDF simulation behavior
+Takes task templates as input and outputs a list of jobs as execution logs from simulation.
+
+### Simulator features
+- Number of tasks (per task type) to be scheduled can be specified 
+- The execution time of each task is calculated from a Gaussian distribution based on the worst and best execution time
+- The execution time of tasks can be configured to use only the worst case time, useful for doing analysis and comparison
+- Support for hyperperiod bounding.
+- Unit tests covering common scenarios
+
+### Usage
+Update the task templates in the main function with desired data and specify the flags if needed
+```python
+# Example usage
+    task_templates = [
+        TaskTemplate(
+            id=1,
+            best_case_time=1,
+            worst_case_time=3,
+            time_period=5,
+            deadline=5,
+            jitter=0,
+        ),
+        TaskTemplate(
+            id=2,
+            best_case_time=2,
+            worst_case_time=4,
+            time_period=10,
+            deadline=10,
+            jitter=0,
+        ),
+    ]
+    simulation = EDFSimulation(task_templates, num_tasks=3)
+    job_log = simulation.run()
+    for job in job_log:
+        print(job)
+```
+The returned job_log can be visualized by calling graph.graph(job_log)
+
 ## Main Entry Point
 
 The `main.py` script is the current command-line entrypoint for loading one taskset, converting it into task templates, running a simulation, and plotting the resulting schedule.
