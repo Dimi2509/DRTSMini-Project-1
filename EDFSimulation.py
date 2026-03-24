@@ -26,7 +26,7 @@ def get_hyperperiod(task_templates):
 
 
 def create_task_list(
-    task_templates: list, num_tasks, use_worst_case=False, use_hyperperiod=False
+    task_templates: list, num_tasks=20, use_worst_case=False, use_hyperperiod=False
 ):
     tasks = []
     for i in range(num_tasks):
