@@ -42,7 +42,7 @@ python parser.py --dataset-name test --schedulable true
 The `EDFSimulation.py` module implements an Earliest Deadline First scheduler for periodic real-time tasks.
 
 ### EDF simulation behavior
-Takes task templates as input and outputs a list of jobs as execution logs from simulation.
+Takes task templates as input, and outputs a list of jobs as execution logs from simulation.
 
 ### Simulator features
 - Number of tasks (per task type) to be scheduled can be specified 
