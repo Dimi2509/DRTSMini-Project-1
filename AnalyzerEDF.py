@@ -22,17 +22,25 @@ class AnalyzerEDF:
         self.is_schedulable = True
         return True
     
-    def analyze_periodic(self, t=0):
+    def analyze_periodic(self):
+        t = 0
         proc_demand = 0
         for task in self.tasks:
-            comp_time = task.worst_case_time - t
-            proc_demand += int( (t + task.time_period - task.deadline) / task.time_period) * comp_time
-        if proc_demand > t:
-            self.is_schedulable = False
-            return False
+            t += task.worst_case_time
+            proc_demand = self.dbf(t)
+            if proc_demand > t:
+                self.is_schedulable = False
+                return False
 
         self.is_schedulable = True
         return True
+
+    def dbf(self, t):
+        proc_demand = 0
+        for task in self.tasks:
+            comp_time = task.worst_case_time
+            proc_demand += int( (t + task.time_period - task.deadline) / task.time_period) * comp_time
+        return proc_demand
 
     def _sort(self):
         # self.tasks.sort(key=lambda x: x.deadline) # Yea no.
