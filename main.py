@@ -80,8 +80,8 @@ if __name__ == "__main__":
 
     # Check schedulability
     analyzer = AnalyzerEDF(task_templates[0])
-    schedulable = analyzer.analyze_aperiodic()
-    # schedulable = analyzer.analyze_periodic()
+    # schedulable = analyzer.analyze_aperiodic()
+    schedulable = analyzer.analyze_periodic()
     if schedulable:
         print("The set is schedulable")
     else:
