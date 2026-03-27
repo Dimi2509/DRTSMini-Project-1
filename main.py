@@ -5,6 +5,8 @@ import EDFSimulation
 from AnalyzerEDF import AnalyzerEDF
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
 from graph_hyperperiod import graph_hyperperiod 
+import TaskTemplate
+from Job import Job
 
 def main():
     pass
@@ -21,9 +23,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset-name",
         type=str,
-        choices=["automotive", "uunifast", "test"],
+        choices=["automotive", "uunifast", "test", "other"],
         default="automotive",
         help="Name of the dataset to parse.",
+    )
+    parser.add_argument(
+        "--path-to-csv",
+        type=str,
+        default="",
+        help="Path to other dataset CSV file. Only used if dataset-name is 'other'.",
     )
     parser.add_argument(
         "--utilization",
@@ -62,7 +70,8 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         utilization=args.utilization,
         taskset_index=args.taskset_index,
-        schedulable=args.schedulable
+        schedulable=args.schedulable,
+        path_to_csv=args.path_to_csv
     )
 
     # Example of converting to TaskTemplates
@@ -70,6 +79,36 @@ if __name__ == "__main__":
     for i in range(len(dataset)):
         task_template_set = dataframe_to_task_templates(dataset[i])
         task_templates.append(task_template_set)
+
+    # task_templates = [
+    #     [],
+    #     [
+    #     TaskTemplate.TaskTemplate(
+    #         id=1,
+    #         best_case_time=1,
+    #         worst_case_time=2,
+    #         time_period=6,
+    #         deadline=4,
+    #         jitter=0,
+    #     ),
+    #     TaskTemplate.TaskTemplate(
+    #         id=2,
+    #         best_case_time=1,
+    #         worst_case_time=2,
+    #         time_period=8,
+    #         deadline=5,
+    #         jitter=0,
+    #     ),
+    #     TaskTemplate.TaskTemplate(
+    #         id=3,
+    #         best_case_time=1,
+    #         worst_case_time=3,
+    #         time_period=9,
+    #         deadline=7,
+    #         jitter=0,
+    #     ),
+    #     ],
+    # ]
 
     # Check schedulability
     analyzer = AnalyzerEDF(task_templates[0])
@@ -87,18 +126,23 @@ if __name__ == "__main__":
         for i, templates in enumerate(task_templates):
             print(f"\nRunning {simulator} Simulation for dataset {i+1}...")
             if simulator == "EDF":
-                simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1)
+                simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1, use_worst_case=True, use_hyperperiod=True)
                 job_log = simulation.run()
-                print(job_log)
+                # print(job_log)
 
                 for job in job_log:
-                    print(job)
+                    # print(job)
+                    if job.end_time > job.deadline:
+                        print(f"##bad## job.id: {job.id}")
                 graphs.graph(job_log, temp_job_title, True, True)
+                print(f"############################################################################################################################################################################################################################################################################################################################################################## first thing")
 
             else:
                 simulation = RMSimulation.RMSimulation(templates)  # Hyperperiod auto-calculated
                 job_log, hyperperiod = simulation.run()
-                print(job_log)
+                # print(job_log)
                 for job in job_log:
-                    print(job)
-                graph_hyperperiod(job_log, temp_job_title, hyperperiod=hyperperiod, use_deadlines=True)
+                    # print(job)
+                    if job.end_time > job.deadline:
+                        print(f"##bad## job.id: {job.id}")
+                graph_hyperperiod(job_log, temp_job_title, hyperperiod=hyperperiod, use_deadlines=True, use_period=True)

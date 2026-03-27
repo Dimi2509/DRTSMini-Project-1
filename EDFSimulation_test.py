@@ -29,7 +29,7 @@ class test_edf_simulation(unittest.TestCase):
         num_tasks = 3
         simulation = EDFSimulation.EDFSimulation(task_templates, num_tasks=num_tasks)
         job_log = simulation.run()
-        # graphs.graph(job_log, True, True)
+        #graphs.graph(job_log, True, True)
         for job in job_log:
             self.assertLessEqual(
                 job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
@@ -184,6 +184,7 @@ class test_edf_simulation(unittest.TestCase):
             use_hyperperiod=True,
         )
         job_log = simulation.run()
+        graphs.graph(job_log, True, True)
         for job in job_log:
             self.assertLessEqual(
                 job.end_time, job.deadline, f"Job {job.id} missed its deadline!"

@@ -10,7 +10,8 @@ from functools import reduce
 def get_execution_time(best_case_time: float, worst_case_time: float):
     mean = (best_case_time + worst_case_time) / 2
     std_dev = (worst_case_time - best_case_time) / 6
-    return stats.norm.rvs(loc=mean, scale=std_dev)
+    # return stats.norm.rvs(loc=mean, scale=std_dev)
+    return worst_case_time
 
 def lcm(a, b):
     return a * b // gcd(a, b)
