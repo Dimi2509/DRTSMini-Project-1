@@ -10,7 +10,7 @@ from TaskTemplate import TaskTemplate
 
 
 def parse_csv_files(
-    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None, schedulable=True
+    folder_path="datasets/", dataset_name="automotive", utilization=None, verbose=False, taskset_index=None, schedulable=True, path_to_csv=None
 ) -> tuple[list[DataFrame], str]:
     """
     Prase CSV files from the selected dataset, with an optional filter for utilization percentage.
@@ -40,15 +40,15 @@ def parse_csv_files(
         "test": os.path.join(
             "test_tasks"
         ),
-        "book_tasks": os.path.join(
-            "book_tasks"
+        "other": os.path.join(
+            path_to_csv
         )
     }
 
     if dataset_name not in dataset_map:
         raise ValueError(f"Unknown dataset_name: {dataset_name}")
 
-    if utilization is not None:
+    if utilization is not None and dataset_name not in ["test", "other"]:
         try:
             util_float = float(utilization)
             utilization = f"{util_float:.2f}"
@@ -57,15 +57,16 @@ def parse_csv_files(
                 f"Invalid utilization format: {utilization}. Should be a float like '0.50'."
             )
 
-    dataset_path = os.path.join(folder_path, dataset_map[dataset_name])
+    if dataset_name != "other":
+        dataset_path = os.path.join(folder_path, dataset_map[dataset_name])
 
-    if utilization and dataset_name != "test":
+    if utilization and dataset_name != "test" and dataset_name != "other":
         # Select specific utilization percentage
         util_folders = glob.glob(os.path.join(dataset_path, f"{utilization}-util"))
         util_folders = [
             os.path.join(util_folder, "tasksets") for util_folder in util_folders
         ]
-    else:
+    elif dataset_name == "test":
         # Load Test dataset 
         if schedulable:
             util_folders = [os.path.join(dataset_path, "schedulable")]
@@ -74,35 +75,47 @@ def parse_csv_files(
         print(f"Loading {'schedulable' if schedulable else 'not_schedulable'} tasksets from test dataset from {util_folders}")
 
 
-    if verbose:
+    if verbose and dataset_name != "other":
         for util_folder in util_folders:
             print(f"Processing folder: {util_folder}")
 
     # Load csv files
     all_dataframes = []
-    for taskset in util_folders:
-        csv_files = glob.glob(os.path.join(taskset, "*.csv"))
-        if taskset_index is not None and taskset_index < len(csv_files):
-            csv_files = [csv_files[taskset_index]]  # Select only the specified taskset index
-        elif taskset_index is None:
-            # Pick a random taskset from the available CSV files
-            import random
-            print(f"Selecting random taskset")
-            selected_taskset = random.choice(csv_files)
-            taskset_index = csv_files.index(selected_taskset)
-            csv_files = [selected_taskset]
-        else:
-            raise IndexError(f"taskset_index {taskset_index} is out of range for folder {taskset} with {len(csv_files)} CSV files.")
-        for csv_file in csv_files:
-            df = pandas.read_csv(csv_file)
-            all_dataframes.append(df)
+    if dataset_name != "other":
+        for taskset in util_folders:
+            csv_files = glob.glob(os.path.join(taskset, "*.csv"))
+            if taskset_index is not None and taskset_index < len(csv_files):
+                csv_files = [csv_files[taskset_index]]  # Select only the specified taskset index
+            elif taskset_index is None:
+                # Pick a random taskset from the available CSV files
+                import random
+                print(f"Selecting random taskset")
+                selected_taskset = random.choice(csv_files)
+                taskset_index = csv_files.index(selected_taskset)
+                csv_files = [selected_taskset]
+            else:
+                raise IndexError(f"taskset_index {taskset_index} is out of range for folder {taskset} with {len(csv_files)} CSV files.")
+            for csv_file in csv_files:
+                df = pandas.read_csv(csv_file)
+                all_dataframes.append(df)
+    else:
+        print(f"Loading CSV file from {path_to_csv}")
+        df = pandas.read_csv(path_to_csv)
+        all_dataframes.append(df)
 
-    if verbose:
+    if verbose and dataset_name != "other":
         print(f"Total utilization folders processed: {len(util_folders)}")
         print(f"Total CSV files processed: {len(all_dataframes)}")
         print(f"Head of first DataFrame:\n{all_dataframes[0].head()}")
 
-    return all_dataframes, f"Dataset {dataset_name}/{utilization if dataset_name != 'test' else 'schedulable' if schedulable else 'not_schedulable'}/Index {taskset_index}"
+    dataset_suffix = (
+        utilization
+        if dataset_name not in ["test", "other"]
+        else ("schedulable" if schedulable else "not_schedulable")
+        if dataset_name == "test"
+        else "other"
+    )
+    return all_dataframes, f"Dataset {dataset_name}/{dataset_suffix}/Index {taskset_index}"
 
 
 def dataframe_to_jobs(df) -> list[Job]:

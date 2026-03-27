@@ -98,7 +98,8 @@ When executed, `main.py`:
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `--folder-path` | `str` | `datasets/` | Base path to the datasets folder. |
-| `--dataset-name` | `str` | `automotive` | Dataset to load. Supported values: `automotive`, `uunifast`, `test`. |
+| `--dataset-name` | `str` | `automotive` | Dataset to load. Supported values: `automotive`, `uunifast`, `test`, `other`. |
+| `--path-to-csv` | `str` | `None` | Path to a custom CSV file. Used only when `--dataset-name other` is selected. |
 | `--utilization` | `str` | `0.10` | Utilization level to use for `automotive` and `uunifast`. Example: `0.50`. |
 | `--simulator` | `str` | `EDF` | Intended simulator selector. Supported values: `EDF`, `RM`. |
 | `--taskset-index` | `int` or `None` | `None` | Index of the taskset CSV file to load. If omitted, a random taskset is selected. |
@@ -121,6 +122,9 @@ python main.py --dataset-name test --schedulable true
 
 # Run the unschedulable test taskset
 python main.py --dataset-name test --schedulable false
+
+# Run a custom CSV dataset from a local folder
+python main.py --dataset-name other --folder-path . --path-to-csv path/to/custom/tasksets
 ```
 
 ### Notes
