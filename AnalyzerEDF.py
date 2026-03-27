@@ -13,7 +13,7 @@ class AnalyzerEDF:
         self.analyze_aperiodic()
 
     def analyze_aperiodic(self, current_time=0):
-        self.tasks = self._sort(self.tasks)
+        self._sort(self.tasks)
 
         prev_f_time = current_time
         for task in self.tasks:
