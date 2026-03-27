@@ -5,6 +5,8 @@ from scipy import stats
 from math import ceil, gcd
 
 
+# Get execution time based on normal distribution between best case and worst case times,
+# with an option to use worst case time directly for testing purposes
 def get_execution_time(
     best_case_time: float, worst_case_time: float, use_worst_case=False
 ):
@@ -17,6 +19,7 @@ def get_execution_time(
     )  # Return a random execution time based on normal distribution
 
 
+# Calculate hyperperiod of the given task set
 def get_hyperperiod(task_templates):
     periods = [template.time_period for template in task_templates]
     lcm = periods[0]
@@ -25,6 +28,8 @@ def get_hyperperiod(task_templates):
     return lcm
 
 
+# Creates a task list based on the provided task templates, number of tasks,
+# and options for using worst case execution times and hyperperiod
 def create_task_list(
     task_templates: list, num_tasks=20, use_worst_case=False, use_hyperperiod=False
 ):
@@ -51,6 +56,7 @@ def create_task_list(
     return tasks
 
 
+# Task class, used internally for scheduling
 class Task:
     def __init__(self, id, arrival_time, execution_time, deadline, time_period):
         self.id = id
@@ -67,6 +73,7 @@ class Task:
         return f"Task(id={self.id}, arrival_time={self.arrival_time}, remaining_time={self.remaining_time}, deadline={self.deadline}, time_period={self.time_period})"
 
 
+# InternalJob class, used for tracking the active job being executed
 class InternalJob:
     def __init__(self, id, deadline, start_time, end_time, time_period, execution_time):
         self.id = id
@@ -81,6 +88,7 @@ class InternalJob:
         return f"Job(name={self.name}, start_time={self.start_time}, end_time={self.end_time}, deadline={self.deadline}, time_period={self.time_period}, execution_time={self.execution_time})"
 
 
+# SchedulingQueue class, used to manage the scheduling queue, sorted based on task arrival times
 class SchedulingQueue:
     def __init__(self):
         self.queue = queue.PriorityQueue()
@@ -105,6 +113,7 @@ class SchedulingQueue:
             print(item[1])
 
 
+# ReadyQueue class, used to manage the ready queue, sorted based on task deadlines
 class ReadyQueue:
     def __init__(self):
         self.queue = queue.PriorityQueue()
@@ -124,6 +133,7 @@ class ReadyQueue:
         return self.queue.empty()
 
 
+# EDFScheduler class, implements the Earliest Deadline First scheduling algorithm on teh given task set
 class EDFScheduler:
     def __init__(self, task_templates=None):
         self.ready_queue = ReadyQueue()
@@ -153,9 +163,9 @@ class EDFScheduler:
 
             # Context change condition: if the top ready task has an earlier deadline than the second ready job,
             # preempt the current job
-            elif top_ready_task is not None and (
-                self.current_job is None
-                or top_ready_task.deadline < self.current_job.deadline
+            elif (
+                top_ready_task is not None
+                and top_ready_task.deadline < self.current_job.deadline
             ):
                 self.log_job(self.current_job)
                 self.ready_queue.put(self.get_task_from_internal_job(self.current_job))
@@ -215,6 +225,7 @@ class EDFScheduler:
             self.ready_queue.put(self.scheduling_queue.pop())
 
 
+# EDFSimulation class, sets up the simulation environment and runs the EDF scheduling algorithm on the given task templates
 class EDFSimulation:
     def __init__(self, tasks, num_tasks, use_worst_case=False, use_hyperperiod=False):
         self.ready_tasks = create_task_list(
