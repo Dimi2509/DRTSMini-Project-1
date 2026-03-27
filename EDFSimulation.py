@@ -4,6 +4,8 @@ from TaskTemplate import TaskTemplate
 from scipy import stats
 from math import ceil, gcd
 
+import graphs
+
 
 # Get execution time based on normal distribution between best case and worst case times,
 # with an option to use worst case time directly for testing purposes
@@ -14,8 +16,8 @@ def get_execution_time(
     std_dev = (worst_case_time - best_case_time) / 6  # Assuming 99.7% of values
     if use_worst_case:
         return worst_case_time
-    return stats.norm.rvs(
-        loc=mean, scale=std_dev
+    return ceil(
+        stats.norm.rvs(loc=mean, scale=std_dev)
     )  # Return a random execution time based on normal distribution
 
 
@@ -28,31 +30,43 @@ def get_hyperperiod(task_templates):
     return lcm
 
 
+def get_highest_start_time(task_templates, num_tasks, use_hyperperiod=False):
+    if use_hyperperiod:
+        hyperperiod = get_hyperperiod(task_templates)
+        return hyperperiod
+    else:
+        max_time = 0
+        for template in task_templates:
+            max_time = max(max_time, template.time_period * num_tasks)
+        return max_time
+
+
 # Creates a task list based on the provided task templates, number of tasks,
 # and options for using worst case execution times and hyperperiod
 def create_task_list(
-    task_templates: list, num_tasks=20, use_worst_case=False, use_hyperperiod=False
+    task_templates: list, num_tasks=5, use_worst_case=False, use_hyperperiod=False
 ):
     tasks = []
-    for i in range(num_tasks):
-        for template in task_templates:
-            execution_time = ceil(
-                get_execution_time(
-                    template.best_case_time, template.worst_case_time, use_worst_case
-                )
-            )
-            arrival_time = i * template.time_period
-            if use_hyperperiod and arrival_time >= get_hyperperiod(task_templates):
-                continue
+    max_time = get_highest_start_time(task_templates, num_tasks, use_hyperperiod)
+
+    for template in task_templates:
+        arrival_time = 0
+        while arrival_time <= max_time:
             tasks.append(
                 Task(
                     id=template.id,
                     arrival_time=arrival_time,
-                    execution_time=execution_time,
+                    execution_time=get_execution_time(
+                        template.best_case_time,
+                        template.worst_case_time,
+                        use_worst_case,
+                    ),
                     deadline=template.deadline + arrival_time,
                     time_period=template.time_period,
                 )
             )
+            arrival_time += template.time_period
+
     return tasks
 
 
@@ -241,26 +255,38 @@ class EDFSimulation:
 
 
 if __name__ == "__main__":
-    # Example usage
     task_templates = [
         TaskTemplate(
             id=1,
             best_case_time=1,
-            worst_case_time=3,
-            time_period=5,
-            deadline=5,
+            worst_case_time=2,
+            time_period=6,
+            deadline=4,
             jitter=0,
         ),
         TaskTemplate(
             id=2,
-            best_case_time=2,
-            worst_case_time=4,
-            time_period=10,
-            deadline=10,
+            best_case_time=1,
+            worst_case_time=2,
+            time_period=8,
+            deadline=5,
+            jitter=0,
+        ),
+        TaskTemplate(
+            id=3,
+            best_case_time=1,
+            worst_case_time=3,
+            time_period=9,
+            deadline=7,
             jitter=0,
         ),
     ]
-    simulation = EDFSimulation(task_templates, num_tasks=3)
+    num_tasks = 5
+    simulation = EDFSimulation(
+        task_templates,
+        num_tasks=num_tasks,
+        use_worst_case=True,
+        use_hyperperiod=True,
+    )
     job_log = simulation.run()
-    for job in job_log:
-        print(job)
+    graphs.graph(job_log, True, True)
