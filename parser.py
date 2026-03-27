@@ -40,6 +40,9 @@ def parse_csv_files(
         "test": os.path.join(
             "test_tasks"
         ),
+        "book_tasks": os.path.join(
+            "book_tasks"
+        )
     }
 
     if dataset_name not in dataset_map:
