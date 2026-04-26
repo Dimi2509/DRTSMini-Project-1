@@ -252,7 +252,7 @@ class EDFSimulation:
         )
         self.scheduler = EDFScheduler(tasks)
 
-    def run(self) -> list:
+    def run(self) -> list[Job]:
         for task in self.ready_tasks:
             self.scheduler.scheduling_queue.put(task)
         self.scheduler.run()

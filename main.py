@@ -21,9 +21,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset-name",
         type=str,
-        choices=["automotive", "uunifast", "test"],
+        choices=["automotive", "uunifast", "test", "other"],
         default="automotive",
         help="Name of the dataset to parse.",
+    )
+    parser.add_argument(
+        "--path-to-csv",
+        type=str,
+        default="",
+        help="Path to other dataset CSV file. Only used if dataset-name is 'other'.",
     )
     parser.add_argument(
         "--utilization",
@@ -62,7 +68,8 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         utilization=args.utilization,
         taskset_index=args.taskset_index,
-        schedulable=args.schedulable
+        schedulable=args.schedulable,
+        path_to_csv=args.path_to_csv
     )
 
     # Example of converting to TaskTemplates
@@ -73,8 +80,8 @@ if __name__ == "__main__":
 
     # Check schedulability
     analyzer = AnalyzerEDF(task_templates[0])
-    schedulable = analyzer.analyze_aperiodic()
-    # schedulable = analyzer.analyze_periodic()
+    # schedulable = analyzer.analyze_aperiodic()
+    schedulable = analyzer.analyze_periodic()
     if schedulable:
         print("The set is schedulable")
     else:

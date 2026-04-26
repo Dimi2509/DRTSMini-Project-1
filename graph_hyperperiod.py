@@ -82,7 +82,7 @@ def graph_hyperperiod(job_log, job_title="Schedule", hyperperiod=None, use_deadl
 
         if use_period:
             gnt.broken_barh([(job.time_period - time_period_width/2, time_period_width)],
-                            (y_bottom + y_bottom_padding, y_unit), facecolor='blue')
+                            (y_bottom + y_bottom_padding, y_unit + 5), facecolor='blue')
 
     gnt.set_yticks(y_ticks)
     gnt.set_yticklabels(y_ticklabels)
