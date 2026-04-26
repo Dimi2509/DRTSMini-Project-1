@@ -105,6 +105,7 @@ class RMScheduler:
         self.current_time = 0
         self.current_job: InternalJob = None
         self.job_log = []
+        self.wcrts = {}
 
     def run(self):
         while not (self.ready_queue.empty() and self.scheduling_queue.empty()):
@@ -125,13 +126,18 @@ class RMScheduler:
             self.current_time += 1
 
     def log_job(self, job: InternalJob):
-        self.job_log.append(Job(
+        executed_job = Job(
             id=job.id,
             deadline=job.deadline,
             start_time=job.start_time,
-            end_time=job.end_time if job.end_time else self.current_time,
+            end_time=(job.end_time if job.end_time is not None else self.current_time),
             time_period=job.time_period
-        ))
+        )
+        if job.execution_time <= 0:
+            wcrt = executed_job.end_time - executed_job.start_time
+            self.wcrts[executed_job.id] = max(wcrt, self.wcrts.get(executed_job.id, 0))
+
+        self.job_log.append(executed_job)
 
     def log_job_if_finished(self, job: InternalJob):
         if job.execution_time <= 0:
@@ -162,6 +168,9 @@ class RMScheduler:
         while not self.scheduling_queue.empty() and self.scheduling_queue.peek().arrival_time <= self.current_time:
             self.ready_queue.put(self.scheduling_queue.pop())
 
+    def get_wcrts(self):
+        return self.wcrts
+
 # ---------------- RMSimulation ----------------
 
 class RMSimulation:
@@ -179,6 +188,9 @@ class RMSimulation:
             self.scheduler.scheduling_queue.put(task)
         self.scheduler.run()
         return self.scheduler.job_log, self.hyperperiod
+    
+    def get_wcrts(self):
+        return self.scheduler.get_wcrts()
 
 
 

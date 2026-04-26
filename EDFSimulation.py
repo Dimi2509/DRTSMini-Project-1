@@ -33,12 +33,12 @@ def get_hyperperiod(task_templates):
 def get_highest_start_time(task_templates, num_tasks, use_hyperperiod=False):
     if use_hyperperiod:
         hyperperiod = get_hyperperiod(task_templates)
-        return hyperperiod
+        return hyperperiod - 1
     else:
         max_time = 0
         for template in task_templates:
             max_time = max(max_time, template.time_period * num_tasks)
-        return max_time
+        return max_time - 1
 
 
 # Creates a task list based on the provided task templates, number of tasks,
@@ -155,9 +155,10 @@ class EDFScheduler:
         self.task_templates = task_templates if task_templates is not None else []
         self.current_time = 0
         self.job_log = []
+        self.wcrts = {}
         self.current_job: InternalJob = None
 
-    def run(self):
+    def run(self) -> list:
         # self.scheduling_queue.print()  # Print the scheduling queue before starting the simulation
 
         while not (
@@ -194,17 +195,18 @@ class EDFScheduler:
             self.current_time += 1
 
     def log_job(self, job: InternalJob):
-        self.job_log.append(
-            Job(
-                id=job.id,
-                deadline=job.deadline,
-                start_time=job.start_time,
-                end_time=(
-                    job.end_time if job.end_time is not None else self.current_time
-                ),
-                time_period=job.time_period,
-            )
+        executed_job = Job(
+            id=job.id,
+            deadline=job.deadline,
+            start_time=job.start_time,
+            end_time=(job.end_time if job.end_time is not None else self.current_time),
+            time_period=job.time_period,
         )
+        if job.execution_time <= 0:
+            wcrt = executed_job.end_time - executed_job.start_time
+            self.wcrts[executed_job.id] = max(wcrt, self.wcrts.get(executed_job.id, 0))
+
+        self.job_log.append(executed_job)
 
     def log_job_if_finished(self, job: InternalJob):
         if job.execution_time <= 0:
@@ -238,6 +240,9 @@ class EDFScheduler:
         ):
             self.ready_queue.put(self.scheduling_queue.pop())
 
+    def get_wcrts(self):
+        return self.wcrts
+
 
 # EDFSimulation class, sets up the simulation environment and runs the EDF scheduling algorithm on the given task templates
 class EDFSimulation:
@@ -247,11 +252,14 @@ class EDFSimulation:
         )
         self.scheduler = EDFScheduler(tasks)
 
-    def run(self):
+    def run(self) -> list:
         for task in self.ready_tasks:
             self.scheduler.scheduling_queue.put(task)
         self.scheduler.run()
         return self.scheduler.job_log
+
+    def get_wcrts(self):
+        return self.scheduler.get_wcrts()
 
 
 if __name__ == "__main__":
@@ -259,7 +267,7 @@ if __name__ == "__main__":
         TaskTemplate(
             id=1,
             best_case_time=1,
-            worst_case_time=2,
+            worst_case_time=12,
             time_period=6,
             deadline=4,
             jitter=0,
@@ -267,7 +275,7 @@ if __name__ == "__main__":
         TaskTemplate(
             id=2,
             best_case_time=1,
-            worst_case_time=2,
+            worst_case_time=12,
             time_period=8,
             deadline=5,
             jitter=0,
@@ -275,7 +283,7 @@ if __name__ == "__main__":
         TaskTemplate(
             id=3,
             best_case_time=1,
-            worst_case_time=3,
+            worst_case_time=13,
             time_period=9,
             deadline=7,
             jitter=0,
@@ -285,8 +293,10 @@ if __name__ == "__main__":
     simulation = EDFSimulation(
         task_templates,
         num_tasks=num_tasks,
-        use_worst_case=True,
-        use_hyperperiod=True,
+        use_worst_case=False,
+        use_hyperperiod=False,
     )
     job_log = simulation.run()
-    graphs.graph(job_log, True, True)
+    wcrts = simulation.get_wcrts()
+    # graphs.graph(job_log, True, True)
+    print(wcrts)

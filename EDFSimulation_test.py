@@ -139,6 +139,7 @@ class test_edf_simulation(unittest.TestCase):
             use_hyperperiod=True,
         )
         job_log = simulation.run()
+
         for job in job_log:
             self.assertLessEqual(
                 job.start_time, 10, f"Job {job.id} missed its deadline!"
