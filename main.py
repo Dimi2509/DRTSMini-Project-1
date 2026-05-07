@@ -4,7 +4,52 @@ import RMSimulation
 import EDFSimulation
 from AnalyzerEDF import AnalyzerEDF
 from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
-from graph_hyperperiod import graph_hyperperiod 
+from graph_hyperperiod import graph_hyperperiod
+
+
+def summarize_job_log(job_log):
+    total_jobs = len(job_log)
+    deadline_misses = 0
+    max_lateness = float("-inf")
+    total_execution_interval = 0
+
+    per_task = {}
+
+
+    for job in job_log:
+        lateness = job.end_time - job.deadline
+        execution_interval = job.end_time - job.start_time
+        total_execution_interval += execution_interval
+
+        if lateness > 0:
+            deadline_misses += 1
+
+        max_lateness = max(max_lateness, lateness)
+
+        if job.id not in per_task:
+            per_task[job.id] = {
+                "count": 0,
+                "misses": 0,
+                "max_lateness": float("-inf"),
+                "execution_sum": 0
+            }
+
+        per_task[job.id]["count"] += 1
+        per_task[job.id]["execution_sum"] += execution_interval
+        per_task[job.id]["max_lateness"] = max(per_task[job.id]["max_lateness"], lateness)
+
+        if lateness > 0:
+            per_task[job.id]["misses"] += 1
+
+    avg_execution_interval = total_execution_interval / total_jobs if total_jobs > 0 else 0
+
+    print("\n# Simulation Summary")
+    print(f"Total jobs: {total_jobs}")
+    print(f"Deadline misses: {deadline_misses}")
+    print(f"Jobs meeting deadlines: {total_jobs - deadline_misses}")
+    print(f"Max lateness: {max_lateness}")
+    print(f"Average execution interval: {avg_execution_interval:.2f}")
+
 
 def main():
     pass
@@ -82,23 +127,39 @@ if __name__ == "__main__":
 
     # Prepare simulation configuration
     simulators_to_run = [args.simulator] if args.simulator else ["EDF", "RM"]
+
     for simulator in simulators_to_run:
         temp_job_title = job_title + " " + simulator
+
         for i, templates in enumerate(task_templates):
             print(f"\nRunning {simulator} Simulation for dataset {i+1}...")
+
             if simulator == "EDF":
                 simulation = EDFSimulation.EDFSimulation(templates, num_tasks=1)
                 job_log = simulation.run()
-                print(job_log)
 
+                print(job_log)
                 for job in job_log:
                     print(job)
+
+                summarize_job_log(job_log)
+
                 graphs.graph(job_log, temp_job_title, True, True)
 
             else:
                 simulation = RMSimulation.RMSimulation(templates)  # Hyperperiod auto-calculated
                 job_log, hyperperiod = simulation.run()
+
                 print(job_log)
                 for job in job_log:
                     print(job)
-                graph_hyperperiod(job_log, temp_job_title, hyperperiod=hyperperiod, use_deadlines=True)
+
+                summarize_job_log(job_log)
+                print(f"\nHyperperiod: {hyperperiod}")
+
+                graph_hyperperiod(
+                    job_log,
+                    temp_job_title,
+                    hyperperiod=hyperperiod,
+                    use_deadlines=True
+                )
