@@ -34,9 +34,9 @@ def graph(job_log, job_title="hehe", use_deadlines=False, use_period=False):
     ids = [x.id for x in job_log]
     dedup_n = []
     [dedup_n.append(x) for x in ids if x not in dedup_n]
-    print(dedup_n)
+    # print(dedup_n)
     n = len(dedup_n)
-    print(f"Number of tasks: {n}")
+    # print(f"Number of tasks: {n}")
 
     # Setting Y-axis limits
     y_unit = 10    
@@ -44,8 +44,8 @@ def graph(job_log, job_title="hehe", use_deadlines=False, use_period=False):
     y_bottom_padding = 10
     y_top_padding = 10
     ylim = n * (y_unit + y_per_task_padding)
-    print(f"ylim: {ylim}")
-    print(f"true ylim: {ylim + y_bottom_padding + y_top_padding}")
+    # print(f"ylim: {ylim}")
+    # print(f"true ylim: {ylim + y_bottom_padding + y_top_padding}")
     gnt.set_ylim(0, ylim + y_bottom_padding + y_top_padding)
 
     y_ticks = []
@@ -107,14 +107,14 @@ def graph(job_log, job_title="hehe", use_deadlines=False, use_period=False):
             # gnt.vlines(job.time_period, y_bottom + y_bottom_padding, (y_bottom + y_bottom_padding) + (y_unit + y_per_task_padding/2), 
             #            colors='blue', linewidth=arrow_width * 0.6)
             # gnt.broken_barh([(job.start_time, job.end_time - job.start_time)], (y_bottom + y_bottom_padding, y_unit), facecolor=get_color_from_id(job.id + 1, n))
-            gnt.broken_barh([(job.time_period - time_period_width/2, time_period_width)], (y_bottom + y_bottom_padding, y_unit), facecolor='blue')
+            gnt.broken_barh([(job.time_period - time_period_width/2, time_period_width)], (y_bottom + y_bottom_padding, y_unit + 5), facecolor='blue')
 
 
 
-        print(f"Job ID: {job.id}")
-        print(f"y_bottom: {y_bottom}")
-        print(f"job start: {job.start_time}, job end: {job.end_time}")
-        print(f"job deadline: {job.deadline - deadline_offset}")
+        # print(f"Job ID: {job.id}")
+        # print(f"y_bottom: {y_bottom}")
+        # print(f"job start: {job.start_time}, job end: {job.end_time}")
+        # print(f"job deadline: {job.deadline - deadline_offset}")
     
 
     gnt.set_yticks(y_ticks)
