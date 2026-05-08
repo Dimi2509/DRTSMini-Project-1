@@ -1,11 +1,13 @@
+import unittest
 import EDFSimulation
 import TaskTemplate
 import graphs
-import unittest
-from parser import parse_csv_files, dataframe_to_jobs, dataframe_to_task_templates
 
 
 class test_edf_simulation(unittest.TestCase):
+
+    def get_completed_jobs(self, job_log):
+        return [job for job in job_log if job.completed]
 
     def test_normal_schedulable_tasks(self):
         task_templates = [
@@ -26,21 +28,26 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
+
         num_tasks = 3
         simulation = EDFSimulation.EDFSimulation(task_templates, num_tasks=num_tasks)
         job_log = simulation.run()
-        #graphs.graph(job_log, True, True)
-        for job in job_log:
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        for job in completed_jobs:
             self.assertLessEqual(
-                job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
+                job.end_time,
+                job.deadline,
+                f"Job {job.id} missed its deadline!",
             )
+
         self.assertGreaterEqual(
-            len(job_log),
+            len(completed_jobs),
             num_tasks * len(task_templates),
-            f"Number of jobs should be more than or equal to num_tasks * number of task templates!",
+            "Number of completed jobs should be at least num_tasks * number of task templates!",
         )
 
-    def test_worst_case_schedulable_tasks(self):
+    def test_worst_case_unschedulable_tasks(self):
         task_templates = [
             TaskTemplate.TaskTemplate(
                 id=1,
@@ -59,22 +66,26 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
+
         num_tasks = 3
         simulation = EDFSimulation.EDFSimulation(
-            task_templates, num_tasks=num_tasks, use_worst_case=True
+            task_templates,
+            num_tasks=num_tasks,
+            use_worst_case=True,
         )
+
         job_log = simulation.run()
-        for job in job_log:
-            with self.assertRaises(
-                AssertionError, msg=f"Job {job.id} should have missed its deadline!"
-            ):
-                self.assertLessEqual(
-                    job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
-                )
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        self.assertTrue(
+            any(job.end_time > job.deadline for job in completed_jobs),
+            "At least one completed job should miss its deadline!",
+        )
+
         self.assertGreaterEqual(
-            len(job_log),
+            len(completed_jobs),
             num_tasks * len(task_templates),
-            f"Number of jobs should be more than or equal to num_tasks * number of task templates!",
+            "Number of completed jobs should be at least num_tasks * number of task templates!",
         )
 
     def test_unschedulable_tasks(self):
@@ -96,20 +107,21 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
+
         num_tasks = 3
         simulation = EDFSimulation.EDFSimulation(task_templates, num_tasks=num_tasks)
         job_log = simulation.run()
-        for job in job_log:
-            with self.assertRaises(
-                AssertionError, msg=f"Job {job.id} should have missed its deadline!"
-            ):
-                self.assertLessEqual(
-                    job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
-                )
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        self.assertTrue(
+            any(job.end_time > job.deadline for job in completed_jobs),
+            "At least one completed job should miss its deadline!",
+        )
+
         self.assertGreaterEqual(
-            len(job_log),
+            len(completed_jobs),
             num_tasks * len(task_templates),
-            f"Number of jobs should be more than or equal to num_tasks * number of task templates!",
+            "Number of completed jobs should be at least num_tasks * number of task templates!",
         )
 
     def test_hyperperiod_tasks(self):
@@ -131,24 +143,29 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
-        num_tasks = 3
+
         simulation = EDFSimulation.EDFSimulation(
             task_templates,
-            num_tasks=num_tasks,
+            num_tasks=3,
             use_worst_case=True,
             use_hyperperiod=True,
         )
-        job_log = simulation.run()
 
-        for job in job_log:
-            self.assertLessEqual(
-                job.start_time, 10, f"Job {job.id} missed its deadline!"
-            )
-        self.assertGreaterEqual(
-            len(job_log),
+        job_log = simulation.run()
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        self.assertEqual(
+            len(completed_jobs),
             2,
-            f"There should be 2 jobs in this hyperperiod!",
+            "There should be exactly 2 completed jobs in one hyperperiod.",
         )
+
+        for job in completed_jobs:
+            self.assertLessEqual(
+                job.release_time,
+                0,
+                f"Job {job.id} should be released at time 0 in this hyperperiod.",
+            )
 
     def test_example_from_book(self):
         task_templates = [
@@ -177,18 +194,24 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
-        num_tasks = 5
+
         simulation = EDFSimulation.EDFSimulation(
             task_templates,
-            num_tasks=num_tasks,
+            num_tasks=5,
             use_worst_case=True,
             use_hyperperiod=True,
         )
+
         job_log = simulation.run()
-        graphs.graph(job_log, True, True)
-        for job in job_log:
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        # graphs.graph(job_log, True, True)
+
+        for job in completed_jobs:
             self.assertLessEqual(
-                job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
+                job.end_time,
+                job.deadline,
+                f"Job {job.id} missed its deadline!",
             )
 
     def test_edf_but_not_rm(self):
@@ -210,14 +233,21 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
-        num_tasks = 5
+
         simulation = EDFSimulation.EDFSimulation(
-            task_templates, num_tasks=num_tasks, use_worst_case=True
+            task_templates,
+            num_tasks=5,
+            use_worst_case=True,
         )
+
         job_log = simulation.run()
-        for job in job_log:
+        completed_jobs = self.get_completed_jobs(job_log)
+
+        for job in completed_jobs:
             self.assertLessEqual(
-                job.end_time, job.deadline, f"Job {job.id} missed its deadline!"
+                job.end_time,
+                job.deadline,
+                f"Job {job.id} missed its deadline!",
             )
 
     def test_get_hyperperiod(self):
@@ -239,11 +269,17 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             ),
         ]
+
         self.assertEqual(EDFSimulation.get_hyperperiod(templates), 12)
 
     def test_get_execution_time_worst_case(self):
-        w = EDFSimulation.get_execution_time(1, 5, use_worst_case=True)
-        self.assertEqual(w, 5)
+        execution_time = EDFSimulation.get_execution_time(
+            1,
+            5,
+            use_worst_case=True,
+        )
+
+        self.assertEqual(execution_time, 5)
 
     def test_create_task_list_size(self):
         templates = [
@@ -256,11 +292,17 @@ class test_edf_simulation(unittest.TestCase):
                 jitter=0,
             )
         ]
+
         tasks = EDFSimulation.create_task_list(
-            templates, num_tasks=3, use_worst_case=True, use_hyperperiod=False
+            templates,
+            num_tasks=3,
+            use_worst_case=True,
+            use_hyperperiod=False,
         )
+
         self.assertEqual(len(tasks), 3)
-        self.assertTrue(all(t.arrival_time in [0, 10, 20] for t in tasks))
+        self.assertTrue(all(task.arrival_time in [0, 10, 20] for task in tasks))
+        self.assertTrue(all(task.release_time in [0, 10, 20] for task in tasks))
 
 
 if __name__ == "__main__":

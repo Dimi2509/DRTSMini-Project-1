@@ -138,3 +138,78 @@ class AnalyzerEDF:
         plt.plot(t, demands)
         plt.plot(t, t)
         plt.show()
+    
+    def compute_edf_wcrts(self):
+        H = self.get_hyperperiod(self.tasks)
+
+        jobs = []
+
+        for task in self.tasks:
+            release_time = 0
+
+            while release_time < H:
+                jobs.append({
+                    "task_id": task.id,
+                    "release_time": release_time,
+                    "absolute_deadline": release_time + task.deadline,
+                    "remaining_time": task.worst_case_time,
+                    "finish_time": None,
+                })
+
+                release_time += task.time_period
+
+        current_time = 0
+        completed_jobs = []
+
+        while len(completed_jobs) < len(jobs):
+            ready_jobs = [
+                job for job in jobs
+                if job["release_time"] <= current_time
+                and job["remaining_time"] > 0
+            ]
+
+            if not ready_jobs:
+                next_release = min(
+                    job["release_time"]
+                    for job in jobs
+                    if job["remaining_time"] > 0
+                )
+                current_time = next_release
+                continue
+
+            current_job = min(
+                ready_jobs,
+                key=lambda job: (
+                    job["absolute_deadline"],
+                    job["task_id"],
+                )
+            )
+
+            current_job["remaining_time"] -= 1
+            current_time += 1
+
+            if current_job["remaining_time"] == 0:
+                current_job["finish_time"] = current_time
+                completed_jobs.append(current_job)
+
+        response_times = {}
+
+        for job in completed_jobs:
+            response_time = job["finish_time"] - job["release_time"]
+            task_id = job["task_id"]
+
+            response_times[task_id] = max(
+                response_times.get(task_id, 0),
+                response_time,
+            )
+
+        schedulable = all(
+            job["finish_time"] <= job["absolute_deadline"]
+            for job in completed_jobs
+        )
+
+        return {
+            "schedulable": schedulable,
+            "response_times": response_times,
+            "hyperperiod": H,
+        }
