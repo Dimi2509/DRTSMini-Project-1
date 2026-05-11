@@ -70,6 +70,8 @@ def graph(job_log, job_title="hehe", use_deadlines=False, use_period=False):
     max_end_time_time = max(end_time_times)
     max_time = max_end_time_time
 
+    # add time period more than 1 time
+
     x_padding_to_xlim = 0.05
     x_padding = max_time * x_padding_to_xlim
 

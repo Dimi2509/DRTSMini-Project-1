@@ -44,6 +44,8 @@ def graph_hyperperiod(job_log, job_title="Schedule", hyperperiod=None, use_deadl
     else:
         max_time = hyperperiod
 
+    # add time period more than 1 time
+
     x_padding_to_xlim = 0.05
     x_padding = max_time * x_padding_to_xlim
     gnt.set_xlim(0 - x_padding, max_time + x_padding)
