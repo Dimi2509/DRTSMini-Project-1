@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../02515_ImageAnalysis/DTUImageAnalysis-main/exercises"
+		},
+		{
+			"path": "../DRTSMini-Project-2-main"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}
